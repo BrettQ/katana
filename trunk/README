@@ -1,0 +1,17 @@
+Dependences:
+* Qt >= 4.5
+* Sword
+
+Coding standards:
+* Limit lines to 79 characters.
+* Camel case names
+* No hungarian, except for "m" in class member variables
+
+TODO:
+* Infinite scroll:
+ * Reap far-offscreen sections
+ * Intra-book transitions
+* Automatic module downloading
+* Indexed search
+* Note-taking
+* Commentary support
