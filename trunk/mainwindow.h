@@ -46,6 +46,7 @@ private:
 	QSignalMapper* mSearchResultsMapper;
 };
 
+class QMaemo5KineticScroller;
 class SelectDialog : public QDialog
 {
 	Q_OBJECT
@@ -73,6 +74,7 @@ protected:
 	QHBoxLayout mLayout;
 	QSignalMapper* mSignalMapper;
 	QList<QWidget*> mButtons;
+	QMaemo5KineticScroller* mScroller;
 };
 
 bool selectVerse(QWidget* parent, BibleInfo* bible,

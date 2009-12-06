@@ -34,6 +34,7 @@ private:
 class QTextDocument;
 class QTextCursor;
 class QSyntaxHighlighter;
+class QMaemo5KineticScroller;
 class InfiniteScrollViewer : public QTextEdit
 {
 	Q_OBJECT
@@ -66,11 +67,11 @@ protected:
 
 protected slots:
 	void initialScroll();
+	void onScroll();
 
 protected:
 	virtual void showEvent(QShowEvent* event);
 	virtual void resizeEvent(QResizeEvent* event);
-	virtual void wheelEvent(QWheelEvent* event);
 
 private:
 	int getTopPadding();
@@ -81,6 +82,7 @@ private:
 	QTextDocument* mDocument;
 	QWidget* mMainWindow;
 	QSyntaxHighlighter* mHighlighter;
+	QMaemo5KineticScroller* mScroller;
 
 	int mHighlightStart;
 	int mFirstSection;

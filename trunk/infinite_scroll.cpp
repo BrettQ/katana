@@ -5,6 +5,7 @@
 #include <QString>
 #include <QTextBlock>
 #include <QTimer>
+#include <Qt/qmaemo5kineticscroller.h>
 
 #include <iostream>
 
@@ -21,7 +22,7 @@ a\
 }\
 span\
 {\
-	font-weight: bold;\
+	font-family: sans-serif;\
 	font-size: 16pt;\
 }\
 .SectionTitle\
@@ -63,9 +64,11 @@ InfiniteScrollViewer::InfiniteScrollViewer(QWidget* mainWindow,
 
 	setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 	setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+	connect(verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(onScroll()));
 	setReadOnly(true);
 	setTextInteractionFlags(Qt::NoTextInteraction);
 	setDocument(mDocument);
+	mScroller = new QMaemo5KineticScroller(this);
 
 	mHighlightStart = highlightStart;
 	mFirstSection = 0;
@@ -326,9 +329,8 @@ void InfiniteScrollViewer::resizeEvent(QResizeEvent* event)
 	initialScroll();
 }
 
-void InfiniteScrollViewer::wheelEvent(QWheelEvent* event)
+void InfiniteScrollViewer::onScroll()
 {
-	QTextEdit::wheelEvent(event);
 	updatePosition();
 	updateTitle();
 	fillBottomText();

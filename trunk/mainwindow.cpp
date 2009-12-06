@@ -9,6 +9,7 @@
 #include <QProgressDialog>
 #include <QScrollArea>
 #include <QtGui>
+#include <Qt/qmaemo5kineticscroller.h>
 
 MainWindow::MainWindow() : QMainWindow()
 {
@@ -240,6 +241,7 @@ SelectDialog::SelectDialog(QWidget* parent, QList<QStringList> choices,
 	scroll->setFrameShape(QFrame::NoFrame);
 	scroll->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding,
 									QSizePolicy::Preferred));
+	mScroller = new QMaemo5KineticScroller(scroll);
 	mLayout.addWidget(scroll);
 	setContentsMargins(0, 0, 0, 0);
 	setLayout(&mLayout);
