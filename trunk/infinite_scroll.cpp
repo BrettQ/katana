@@ -64,11 +64,13 @@ InfiniteScrollViewer::InfiniteScrollViewer(QWidget* mainWindow,
 
 	setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 	setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-	connect(verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(onScroll(int)));
+	connect(verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(onScroll()));
 	setReadOnly(true);
 	setTextInteractionFlags(Qt::NoTextInteraction);
 	setDocument(mDocument);
 	mScroller = new QMaemo5KineticScroller(this);
+	mScroller->setMaximumVelocity(2000);
+	mScroller->setDecelerationFactor(0.75);
 
 	mHighlightStart = highlightStart;
 	mFirstSection = 0;
@@ -167,7 +169,7 @@ void InfiniteScrollViewer::fillBottomText()
 		QTextCursor cursor(mDocument);
 		cursor.movePosition(QTextCursor::End);
 		cursor.beginEditBlock();
-		while (addedVerses < 10 &&
+		while (addedVerses < 5 &&
 			(mLastSection < mTextSource->getNumSections() - 1 ||
 			mLastParagraph < mTextSource->getNumParagraphs(mLastSection) - 1))
 		{
