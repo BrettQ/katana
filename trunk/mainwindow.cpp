@@ -247,7 +247,9 @@ void MainWindow::goToVerse(QString verse)
 }
 void MainWindow::orientationChanged(const QString& newOrientation)
 {
-	if (newOrientation == QLatin1String(MCE_ORIENTATION_PORTRAIT))
+	bool bPortrait = newOrientation == QLatin1String(MCE_ORIENTATION_PORTRAIT);
+	mpViewer->setShouldShowPosition(!bPortrait);
+	if (bPortrait)
 		setPortrait();
 	else
 		setLandscape();

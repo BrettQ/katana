@@ -49,6 +49,8 @@ public:
 	int getCurrentSection();
 	int getCurrentParagraph();
 
+	void setShouldShowPosition(bool bShow);
+
 protected:
 	void fillInitial(int starting_section, int starting_paragraph);
 	void fillTopText();
@@ -84,6 +86,8 @@ private:
 	QWidget* mMainWindow;
 	QSyntaxHighlighter* mHighlighter;
 	QMaemo5KineticScroller* mScroller;
+
+	bool m_bShowPosition;
 
 	int mHighlightStart;
 	int mFirstSection;

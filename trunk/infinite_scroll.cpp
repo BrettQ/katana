@@ -72,6 +72,8 @@ InfiniteScrollViewer::InfiniteScrollViewer(QWidget* mainWindow,
 	mScroller->setMaximumVelocity(2000);
 	mScroller->setDecelerationFactor(0.75);
 
+	m_bShowPosition = true;
+
 	mHighlightStart = highlightStart;
 	mFirstSection = 0;
 	mFirstParagraph = 0;
@@ -108,6 +110,12 @@ int InfiniteScrollViewer::getCurrentSection()
 int InfiniteScrollViewer::getCurrentParagraph()
 {
 	return mCurrentParagraph;
+}
+
+void InfiniteScrollViewer::setShouldShowPosition(bool bShow)
+{
+	m_bShowPosition = bShow;
+	updateTitle();
 }
 
 void InfiniteScrollViewer::fillInitial(int section, int startingParagraph)
@@ -277,8 +285,13 @@ void InfiniteScrollViewer::updateTitle()
 	QString descrip = getSourceDescrip();
 	int section = getCurrentSection();
 	int paragraph = getCurrentParagraph();
-	mMainWindow->setWindowTitle(QString("Katana - %1 %2:%3").arg(descrip).
-										arg(section + 1).arg(paragraph + 1));
+	if (m_bShowPosition)
+	{
+		mMainWindow->setWindowTitle(QString("Katana - %1 %2:%3").arg(descrip).
+											arg(section+1).arg(paragraph+1));
+	}
+	else
+		mMainWindow->setWindowTitle("Katana");
 }
 
 void InfiniteScrollViewer::rebuildAnchorPositions()
