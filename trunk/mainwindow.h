@@ -26,11 +26,17 @@ protected:
 
 	void replaceViewer(InfiniteScrollViewer* viewer);
 
+	void setLandscape();
+	void setPortrait();
+
+	bool event(QEvent* ev);
+
 protected slots:
 	void selectVerse();
 	void selectTranslation();
 	void search();
 	void goToVerse(QString verse);
+	void orientationChanged(const QString& newOrientation);
 
 private:
 	BibleInfo* mBible;

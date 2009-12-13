@@ -6,8 +6,12 @@
 #include "search_dialog.h"
 
 #include <iostream>
+#include <mce/mode-names.h>
+#include <mce/dbus-names.h>
 #include <QProgressDialog>
 #include <QScrollArea>
+#include <QtDBus/QDBusConnection>
+#include <QtDBus/QDBusMessage>
 #include <QtGui>
 #include <Qt/qmaemo5kineticscroller.h>
 
@@ -44,6 +48,12 @@ MainWindow::MainWindow() : QMainWindow()
 
 	createActions();
 	createMenu();
+	QDBusConnection::systemBus().connect(QString(),
+										MCE_SIGNAL_PATH,
+										MCE_SIGNAL_IF,
+										MCE_DEVICE_ORIENTATION_SIG,
+										this,
+										SLOT(orientationChanged(QString)));
 }
 
 MainWindow::~MainWindow()
@@ -142,6 +152,39 @@ void MainWindow::replaceViewer(InfiniteScrollViewer* viewer)
 	delete item;
 }
 
+void MainWindow::setLandscape()
+{
+	setAttribute(Qt::WA_Maemo5ForceLandscapeOrientation, true);
+}
+
+void MainWindow::setPortrait()
+{
+	setAttribute(Qt::WA_Maemo5ForcePortraitOrientation, true);
+}
+
+bool MainWindow::event(QEvent* ev)
+{
+	switch (ev->type())
+	{
+		case QEvent::WindowActivate:
+			QDBusConnection::systemBus().call(
+				QDBusMessage::createMethodCall(MCE_SERVICE, MCE_REQUEST_PATH,
+											   MCE_REQUEST_IF,
+											   MCE_ACCELEROMETER_ENABLE_REQ));
+		break;
+		case QEvent::WindowDeactivate:
+			QDBusConnection::systemBus().call(
+				QDBusMessage::createMethodCall(MCE_SERVICE, MCE_REQUEST_PATH,
+											   MCE_REQUEST_IF,
+											   MCE_ACCELEROMETER_DISABLE_REQ));
+			break;
+		default:
+			break;
+	}
+
+	return QWidget::event(ev);
+}
+
 void MainWindow::selectVerse()
 {
 	QString bookName;
@@ -201,6 +244,13 @@ void MainWindow::goToVerse(QString verse)
 								key.mVerse, true, mCurrentSearchText);
 
 	replaceViewer(viewer);
+}
+void MainWindow::orientationChanged(const QString& newOrientation)
+{
+	if (newOrientation == QLatin1String(MCE_ORIENTATION_PORTRAIT))
+		setPortrait();
+	else
+		setLandscape();
 }
 
 bool SelectDialog::select(QWidget* parent, QList<QStringList> choices,
