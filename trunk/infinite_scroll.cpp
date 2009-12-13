@@ -64,7 +64,7 @@ InfiniteScrollViewer::InfiniteScrollViewer(QWidget* mainWindow,
 
 	setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 	setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-	connect(verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(onScroll()));
+	connect(verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(onScroll(int)));
 	setReadOnly(true);
 	setTextInteractionFlags(Qt::NoTextInteraction);
 	setDocument(mDocument);
@@ -330,6 +330,11 @@ void InfiniteScrollViewer::resizeEvent(QResizeEvent* event)
 }
 
 void InfiniteScrollViewer::onScroll()
+{
+	QTimer::singleShot(1, this, SLOT(onScrollTimer()));
+}
+
+void InfiniteScrollViewer::onScrollTimer()
 {
 	updatePosition();
 	updateTitle();

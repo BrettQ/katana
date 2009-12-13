@@ -68,6 +68,7 @@ protected:
 protected slots:
 	void initialScroll();
 	void onScroll();
+	void onScrollTimer();
 
 protected:
 	virtual void showEvent(QShowEvent* event);
