@@ -287,6 +287,10 @@ SelectDialog::SelectDialog(QWidget* parent, QList<QStringList> choices,
 
 	QFrame* frame = new QFrame();
 	frame->setLayout(mainLayout);
+	frame->setStyleSheet("QPushButton{"
+						"padding: 10px; "
+						"min-width: 50px;"
+						"}");
 
 	QScrollArea* scroll = new QScrollArea;
 	scroll->setWidget(frame);
@@ -302,7 +306,7 @@ SelectDialog::SelectDialog(QWidget* parent, QList<QStringList> choices,
 void SelectDialog::appendChoices(QStringList choices,
 								QVBoxLayout* parentLayout)
 {
-	// TODO: the 720 width here should at some point be calculated
+	// TODO: the 730 width here should at some point be calculated
 	// so that we can support portrait mode nicely. We should be
 	// able to get the parent window's width and subtract off padding
 	// and scrollbars.
@@ -310,20 +314,17 @@ void SelectDialog::appendChoices(QStringList choices,
 	int currentWidth = 0;
 	for (int i = 0; i < choices.count(); i++)
 	{
-		int buttonMargin = 0;
-	
 		QPushButton* button = new QPushButton(choices[i]);
-		if (!currentRow || currentWidth + button->sizeHint().width() > 720)
+		if (!currentRow || currentWidth + button->sizeHint().width() > 725)
 		{
 			if (currentRow)
-				currentRow->insertStretch(720 - currentWidth);
+				currentRow->insertStretch(725 - currentWidth);
 			currentRow = new QHBoxLayout();
-			currentRow->getContentsMargins(&buttonMargin, 0, 0, 0);
 			parentLayout->addLayout(currentRow);
 			currentWidth = 0;
 		}
 		currentRow->addWidget(button);
-		currentWidth += button->sizeHint().width() + buttonMargin;
+		currentWidth += button->sizeHint().width() - 13;
 
 		mSignalMapper->setMapping(button, choices[i]);
 		connect(button, SIGNAL(clicked()), mSignalMapper, SLOT(map()));
