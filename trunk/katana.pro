@@ -9,3 +9,26 @@ SOURCES = main.cpp mainwindow.cpp infinite_scroll.cpp bible_text_source.cpp \
 CONFIG += qt
 LIBS += -lsword -lQtMaemo5
 INCLUDEPATH += /usr/include/sword
+
+unix {
+	isEmpty(PREFIX) {
+		PREFIX = /usr/local
+	}
+	isEmpty(BINPREFIX) {
+		BINPREFIX = /usr/local
+	}
+	BINDIR = $$BINPREFIX/bin
+	DATADIR = $$PREFIX/share
+
+	DEFINES += DATADIR=\"$$DATADIR\" PKGDATADIR=\"$$PKGDATADIR\"
+
+	INSTALLS += target desktop icon48
+
+	target.path = $$BINDIR
+
+	desktop.path = $$DATADIR/applications/hildon
+	desktop.files += $${TARGET}.desktop
+
+	icon48.path = $$DATADIR/icons/hicolor/48x48/hildon
+	icon48.files += $${TARGET}.png
+}

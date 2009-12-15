@@ -1,0 +1,1 @@
+shlibs:Depends=libc6 (>= 2.5.0-1), libgcc1 (>= 1:4.2.1), libqt4-maemo5-core (>= 4.6.0~git20091204), libqt4-maemo5-dbus (>= 4.6.0~git20091204), libqt4-maemo5-gui (>= 4.6.0~git20091204), libqt4-maemo5-maemo5 (>= 4.6.0~git20091204), libqt4-maemo5-xml (>= 4.6.0~git20091204), libstdc++6 (>= 4.2.1)

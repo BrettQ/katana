@@ -1,0 +1,6 @@
+katana (0.1.0-0) unstable; urgency=low
+
+  * Initial Debianization.
+
+ -- Josh Nisly <katana@joshnisly.com>  Mon,  14 Dec 2009 20:59:05 -0600
+
