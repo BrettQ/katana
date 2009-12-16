@@ -189,13 +189,12 @@ void MainWindow::selectVerse()
 {
 	QString bookName;
 	int chapter = 0;
-	int verse = 0;
-	if (::selectVerse(this, mBible, bookName, chapter, verse))
+	if (::selectVerse(this, mBible, bookName, chapter))
 	{
 		TextSource* bibleSource = getBibleTextSource(mBible, bookName);
 		InfiniteScrollViewer* viewer = \
 			new InfiniteScrollViewer(this, bibleSource,
-									chapter, verse, true, "");
+									chapter, 0, true, "");
 
 		replaceViewer(viewer);
 	}
@@ -339,7 +338,7 @@ void SelectDialog::selectChoice(const QString& choice)
 }
 
 bool selectVerse(QWidget* parent, BibleInfo* bible,
-				QString& bookName, int& chapter, int& verse)
+				QString& bookName, int& chapter)
 {
 	QList<QStringList> choices;
 	choices.push_back(bible->getOTBookNames());
@@ -360,18 +359,8 @@ bool selectVerse(QWidget* parent, BibleInfo* bible,
 		return false;
 	int selectedChapter = selectedChoice.toInt() - 1;
 
-	choices.clear();
-	subChoices.clear();
-	int numVerses = bible->getNumVerses(selectedBookNum, selectedChapter);
-	for (int i = 0; i < numVerses; i++)
-		subChoices.push_back(QString("%1").arg(i + 1));
-	choices.push_back(subChoices);
-	if (!SelectDialog::select(parent, choices, "Verse", selectedChoice))
-		return false;
-
 	bookName = selectedBook;
 	chapter = selectedChapter;
-	verse = selectedChoice.toInt() - 1;
 	return true;
 }
 

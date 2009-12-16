@@ -84,6 +84,6 @@ protected:
 };
 
 bool selectVerse(QWidget* parent, BibleInfo* bible,
-				QString& bookName, int& chapter, int& verse);
+				QString& bookName, int& chapter);
 bool selectTranslation(QWidget* parent, QString& translation);
 
