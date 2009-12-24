@@ -17,10 +17,10 @@ unix {
 	isEmpty(BINPREFIX) {
 		BINPREFIX = /usr/local
 	}
-	BINDIR = $$BINPREFIX/bin
+	BINDIR = $$BINPREFIX/katana
 	DATADIR = $$PREFIX/share
 
-	DEFINES += DATADIR=\"$$DATADIR\" PKGDATADIR=\"$$PKGDATADIR\"
+	#DEFINES += DATADIR=\"$$DATADIR\" PKGDATADIR=\"$$PKGDATADIR\"
 
 	INSTALLS += target desktop icon48
 

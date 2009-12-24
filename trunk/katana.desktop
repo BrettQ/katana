@@ -3,6 +3,6 @@ Encoding=UTF-8
 Version=0.1
 Type=Application
 Name=Katana
-Exec=/opt/usr/bin/katana
+Exec=/opt/katana/katana
 Icon=katana
 X-Osso-Type=application/x-executable
