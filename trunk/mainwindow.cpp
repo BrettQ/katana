@@ -280,6 +280,7 @@ SelectDialog::SelectDialog(QWidget* parent, QList<QStringList> choices,
 			SLOT(selectChoice(const QString&)));
 
 	QVBoxLayout* mainLayout = new QVBoxLayout();
+	mainLayout->setSpacing(0);
 	mainLayout->setContentsMargins(0, 0, 0, 0);
 	for (int i = 0; i < mChoices.count(); i++)
 		appendChoices(mChoices[i], mainLayout);
@@ -287,8 +288,9 @@ SelectDialog::SelectDialog(QWidget* parent, QList<QStringList> choices,
 	QFrame* frame = new QFrame();
 	frame->setLayout(mainLayout);
 	frame->setStyleSheet("QPushButton{"
-						"padding: 10px; "
-						"min-width: 50px;"
+						"padding: 12px; "
+						"margin: 0px; "
+						"min-width: 65px;"
 						"}");
 
 	QScrollArea* scroll = new QScrollArea;
@@ -305,25 +307,26 @@ SelectDialog::SelectDialog(QWidget* parent, QList<QStringList> choices,
 void SelectDialog::appendChoices(QStringList choices,
 								QVBoxLayout* parentLayout)
 {
-	// TODO: the 730 width here should at some point be calculated
-	// so that we can support portrait mode nicely. We should be
-	// able to get the parent window's width and subtract off padding
-	// and scrollbars.
+	int max_width = parentWidget()->width() - 100/* margin for scrolling*/;
 	QHBoxLayout* currentRow = NULL;
 	int currentWidth = 0;
 	for (int i = 0; i < choices.count(); i++)
 	{
 		QPushButton* button = new QPushButton(choices[i]);
-		if (!currentRow || currentWidth + button->sizeHint().width() > 725)
+		// TODO: This is ugly. The sizeHint() for the button
+		// is off. Research why.
+		int buttonWidth = button->sizeHint().width() - 10;
+		if (!currentRow || currentWidth + buttonWidth > max_width)
 		{
 			if (currentRow)
-				currentRow->insertStretch(725 - currentWidth);
+				currentRow->insertStretch(max_width - currentWidth);
 			currentRow = new QHBoxLayout();
+			currentRow->setSpacing(0);
 			parentLayout->addLayout(currentRow);
 			currentWidth = 0;
 		}
 		currentRow->addWidget(button);
-		currentWidth += button->sizeHint().width() - 13;
+		currentWidth += buttonWidth;
 
 		mSignalMapper->setMapping(button, choices[i]);
 		connect(button, SIGNAL(clicked()), mSignalMapper, SLOT(map()));

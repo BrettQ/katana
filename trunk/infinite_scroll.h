@@ -75,6 +75,7 @@ protected slots:
 protected:
 	virtual void showEvent(QShowEvent* event);
 	virtual void resizeEvent(QResizeEvent* event);
+	virtual bool event(QEvent* ev);
 
 private:
 	int getTopPadding();

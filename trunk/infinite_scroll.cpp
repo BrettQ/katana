@@ -1,8 +1,11 @@
 
 #include "infinite_scroll.h"
 
+#include <QEvent>
+#include <QGestureEvent>
 #include <QScrollBar>
 #include <QString>
+#include <QSwipeGesture>
 #include <QTextBlock>
 #include <QTimer>
 #include <Qt/qmaemo5kineticscroller.h>
@@ -34,11 +37,8 @@ span\
 
 void SearchResultsHighlighter::highlightBlock(const QString& text)
 {
-	// TODO: For some bizarre reason, setting the color here
-	// to red actually results in blue text, and vice versa.
-	// (We're actually wanting blue here.)
 	QTextCharFormat format;
-	format.setForeground(Qt::red);
+	format.setForeground(Qt::blue);
 
 	int index = text.indexOf(mText);
 	while (index >= 0)
@@ -53,7 +53,7 @@ InfiniteScrollViewer::InfiniteScrollViewer(QWidget* mainWindow,
 										int startingSection,
 										int startingParagraph,
 										bool highlightStart,
-										QString searchText)
+										QString searchText) : QTextEdit(mainWindow)
 {
 	mTextSource = textSource;
 	mDocument = new QTextDocument();
@@ -71,6 +71,8 @@ InfiniteScrollViewer::InfiniteScrollViewer(QWidget* mainWindow,
 	mScroller = new QMaemo5KineticScroller(this);
 	mScroller->setMaximumVelocity(2000);
 	mScroller->setDecelerationFactor(0.75);
+
+	grabGesture(Qt::SwipeGesture);
 
 	m_bShowPosition = true;
 
@@ -223,7 +225,7 @@ void InfiniteScrollViewer::initialScroll()
 				cursor.movePosition(QTextCursor::WordRight,
 									QTextCursor::KeepAnchor);
 				QTextCharFormat format = cursor.charFormat();
-				format.setForeground(Qt::red);
+				format.setForeground(Qt::blue);
 				cursor.setCharFormat(format);
 				cursor.endEditBlock();
 			}
@@ -342,6 +344,28 @@ void InfiniteScrollViewer::resizeEvent(QResizeEvent* event)
 {
 	QTextEdit::resizeEvent(event);
 	initialScroll();
+}
+
+bool InfiniteScrollViewer::event(QEvent* event)
+{
+	if (event->type() == QEvent::Gesture)
+	{
+		std::cout << event << "\n";
+		QGesture* gesture = static_cast<QGestureEvent*>(event)->gesture(Qt::SwipeGesture);
+		if (gesture)
+		{
+			QSwipeGesture* swipe = static_cast<QSwipeGesture*>(gesture);
+			if (swipe->state() == Qt::GestureFinished &&
+				swipe->horizontalDirection() == QSwipeGesture::Left)
+			{
+				std::cout << "swipe: " << swipe->horizontalDirection() << "\n";
+				std::cout << swipe->verticalDirection() << "\n";
+				std::cout << swipe->swipeAngle() << "\n";
+			}
+		}
+		return true;
+	}
+	return QTextEdit::event(event);
 }
 
 void InfiniteScrollViewer::onScroll()
