@@ -4,6 +4,7 @@
 #include "bible_text_source.h"
 #include "infinite_scroll.h"
 #include "search_dialog.h"
+#include "search_results.h"
 
 #include <iostream>
 #include <mce/mode-names.h>
@@ -37,13 +38,14 @@ MainWindow::MainWindow() : QMainWindow()
 	mpViewer = new InfiniteScrollViewer(this, bibleSource, chapter,
 										verse, false, "");
 	mLayout->addWidget(mpViewer);
+	mSearchResults = new SearchResultsFrame();
+	mLayout->addWidget(mSearchResults);
 	mLayout->setContentsMargins(0, 0, 0, 0);
 	mLayout->setSpacing(0);
 	frame->setLayout(mLayout);
 	setCentralWidget(frame);
 
-	mSearchResultsMapper = new QSignalMapper(this);
-	connect(mSearchResultsMapper, SIGNAL(mapped(const QString&)), this,
+	connect(mSearchResults, SIGNAL(resultSelected(const QString&)), this,
 			SLOT(goToVerse(const QString&)));
 
 	createActions();
@@ -88,60 +90,6 @@ void MainWindow::createMenu()
 	menuBar()->addAction(mSelectVerseAction);
 	menuBar()->addAction(mSelectTransAction);
 	menuBar()->addAction(mSearchAction);
-}
-
-void MainWindow::createSearchResultsPane(QList<Key> results)
-{
-	while (mLayout->count() > 1)
-	{
-		QLayoutItem* item = mLayout->itemAt(1);
-		mLayout->removeItem(item);
-		for (int i = 0; i < item->layout()->count(); i++)
-			item->layout()->itemAt(i)->widget()->hide();
-		delete item;
-	}
-
-	QVBoxLayout* buttonsLayout = new QVBoxLayout;
-	buttonsLayout->setSpacing(0);
-	buttonsLayout->setContentsMargins(0, 0, 0, 0);
-	for (int i = 0; i < results.count(); i++)
-	{
-		Key key = results[i];
-		QString result = QString("%1 %2:%3").arg(key.mBook)
-											.arg(key.mChapter+1)
-											.arg(key.mVerse+1);
-		QPushButton* button = new QPushButton(result);
-		QFont font = button->font();
-		font.setPointSize(12);
-		button->setFont(font);
-		mSearchResultsMapper->setMapping(button, result);
-		connect(button, SIGNAL(clicked()), mSearchResultsMapper, SLOT(map()));
-		buttonsLayout->addWidget(button);
-	}
-	QScrollArea* scroll = new QScrollArea;
-	scroll->setFrameShape(QFrame::NoFrame);
-	scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-	scroll->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-	scroll->setSizePolicy(QSizePolicy(QSizePolicy::Maximum,
-									QSizePolicy::Preferred));
-
-	QFrame* frame = new QFrame();
-	frame->setStyleSheet("QPushButton{"
-						"padding: 3px 10px 3px 10px;"
-						"}");
-	frame->setLayout(buttonsLayout);
-	scroll->setWidget(frame);
-
-	QVBoxLayout* searchLayout = new QVBoxLayout;
-	QLabel* label = new QLabel("<center>Search<br/>Results:</center>");
-	// TODO: this is a hack to work around an apparent bug
-	// in QT. When switching to 4.6, we should check to see
-	// if we can remove this, since it doesn't respect themes.
-	label->setStyleSheet("background: #000");
-	searchLayout->addWidget(label);
-	searchLayout->addWidget(scroll);
-
-	mLayout->addLayout(searchLayout);
 }
 
 void MainWindow::replaceViewer(InfiniteScrollViewer* viewer)
@@ -197,6 +145,7 @@ void MainWindow::selectVerse()
 									chapter, 0, true, "");
 
 		replaceViewer(viewer);
+		mSearchResults->hideResults();
 	}
 }
 
@@ -216,6 +165,7 @@ void MainWindow::selectTranslation()
 									verse, false, "");
 
 		replaceViewer(viewer);
+		mSearchResults->hideResults();
 	}
 }
 
@@ -229,7 +179,7 @@ void MainWindow::search()
 		mCurrentSearchText = searchText;
 		QList<Key> results = mBible->search(searchText, dlg.getSearchScope(),
 											&progress);
-		createSearchResultsPane(results);
+		mSearchResults->handleResults(results);
 	}
 }
 

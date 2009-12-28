@@ -3,9 +3,10 @@
 ######################################################################
 
 # Directories
-HEADERS = mainwindow.h infinite_scroll.h bible_text_source.h search_dialog.h
+HEADERS = mainwindow.h infinite_scroll.h bible_text_source.h search_dialog.h \
+		search_results.h
 SOURCES = main.cpp mainwindow.cpp infinite_scroll.cpp bible_text_source.cpp \
-		search_dialog.cpp
+		search_dialog.cpp search_results.cpp
 CONFIG += qt
 LIBS += -lsword -lQtMaemo5
 INCLUDEPATH += /usr/include/sword

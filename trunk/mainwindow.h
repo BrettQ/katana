@@ -8,6 +8,7 @@ class BibleInfo;
 class InfiniteScrollViewer;
 class Key;
 class QSignalMapper;
+class SearchResultsFrame;
 class MainWindow : public QMainWindow
 {
 	Q_OBJECT
@@ -21,8 +22,6 @@ protected:
 
 	void createActions();
 	void createMenu();
-
-	void createSearchResultsPane(QList<Key> results);
 
 	void replaceViewer(InfiniteScrollViewer* viewer);
 
@@ -43,13 +42,13 @@ private:
 	InfiniteScrollViewer* mpViewer;
 
 	QHBoxLayout* mLayout;
+	SearchResultsFrame* mSearchResults;
 	QAction* mSelectVerseAction;
 	QAction* mSelectTransAction;
 
 	// Searching
 	QString mCurrentSearchText;
 	QAction* mSearchAction;
-	QSignalMapper* mSearchResultsMapper;
 };
 
 class QMaemo5KineticScroller;
