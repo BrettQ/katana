@@ -212,8 +212,15 @@ BibleInfo* getBibleInfo(QString translation)
 {
 	sword::SWModule* module = library.getModule(translation.toAscii().data());
 	if (!module)
-		return NULL;
-
+	{
+		QStringList translations = getAvailableTranslations();
+		if (!translations.count())
+		{
+			std::cout << "No texts available!\n";
+			return NULL;
+		}
+		module = library.getModule(translations[0].toAscii().data());
+	}
 	return new BibleInfo(module);
 }
 
