@@ -40,12 +40,12 @@ void SearchResultsHighlighter::highlightBlock(const QString& text)
 	QTextCharFormat format;
 	format.setForeground(Qt::blue);
 
-	int index = text.indexOf(mText);
+	int index = text.indexOf(mText, 0, Qt::CaseInsensitive);
 	while (index >= 0)
 	{
 		setFormat(index, mText.length(), format);
 
-		index = text.indexOf(mText, index + mText.length());
+		index = text.indexOf(mText, index + mText.length(), Qt::CaseInsensitive);
 	}
 }
 InfiniteScrollViewer::InfiniteScrollViewer(QWidget* mainWindow,
