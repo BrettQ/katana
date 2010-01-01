@@ -97,7 +97,9 @@ void MainWindow::replaceViewer(InfiniteScrollViewer* viewer)
 	QLayoutItem* item = mLayout->takeAt(0);
 	mLayout->insertWidget(0, viewer);
 	mpViewer = viewer;
+	viewer->show();
 	delete item;
+	viewer->setFocus(Qt::TabFocusReason);
 }
 
 void MainWindow::setLandscape()
