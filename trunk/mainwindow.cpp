@@ -237,6 +237,12 @@ SelectDialog::SelectDialog(QWidget* parent, QList<QStringList> choices,
 	for (int i = 0; i < mChoices.count(); i++)
 		appendChoices(mChoices[i], mainLayout);
 
+	QScrollArea* scroll = new QScrollArea;
+	scroll->setFrameShape(QFrame::NoFrame);
+	scroll->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding,
+									QSizePolicy::Preferred));
+	mScroller = new QMaemo5KineticScroller(scroll);
+
 	QFrame* frame = new QFrame();
 	frame->setLayout(mainLayout);
 	frame->setStyleSheet("QPushButton{"
@@ -244,13 +250,8 @@ SelectDialog::SelectDialog(QWidget* parent, QList<QStringList> choices,
 						"margin: 0px; "
 						"min-width: 65px;"
 						"}");
-
-	QScrollArea* scroll = new QScrollArea;
 	scroll->setWidget(frame);
-	scroll->setFrameShape(QFrame::NoFrame);
-	scroll->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding,
-									QSizePolicy::Preferred));
-	mScroller = new QMaemo5KineticScroller(scroll);
+
 	mLayout.addWidget(scroll);
 	setContentsMargins(0, 0, 0, 0);
 	setLayout(&mLayout);
@@ -259,19 +260,15 @@ SelectDialog::SelectDialog(QWidget* parent, QList<QStringList> choices,
 void SelectDialog::appendChoices(QStringList choices,
 								QVBoxLayout* parentLayout)
 {
-	int max_width = parentWidget()->width() - 100/* margin for scrolling*/;
+	int max_width = parentWidget()->width();
 	QHBoxLayout* currentRow = NULL;
 	int currentWidth = 0;
 	for (int i = 0; i < choices.count(); i++)
 	{
 		QPushButton* button = new QPushButton(choices[i]);
-		// TODO: This is ugly. The sizeHint() for the button
-		// is off. Research why.
-		int buttonWidth = button->sizeHint().width() - 10;
+		int buttonWidth = button->sizeHint().width();
 		if (!currentRow || currentWidth + buttonWidth > max_width)
 		{
-			if (currentRow)
-				currentRow->insertStretch(max_width - currentWidth);
 			currentRow = new QHBoxLayout();
 			currentRow->setSpacing(0);
 			parentLayout->addLayout(currentRow);
