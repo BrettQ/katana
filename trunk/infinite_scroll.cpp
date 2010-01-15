@@ -59,6 +59,8 @@ InfiniteScrollViewer::InfiniteScrollViewer(QWidget* mainWindow,
 	mDocument = new QTextDocument();
 	mMainWindow = mainWindow;
 
+    qApp->setStyleSheet("QTextEdit { border: 0; }");
+
 	if (searchText.length() > 0)
 		mHighlighter = new SearchResultsHighlighter(mDocument, searchText);
 

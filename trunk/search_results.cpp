@@ -18,8 +18,6 @@ SearchResultsFrame::SearchResultsFrame()
 	mLayout->setContentsMargins(0, 0, 0, 0);
 	setLayout(mLayout);
 	mSearchResultsMapper = NULL;
-
-	//setStyleSheet("QFrame{background: #000;}");
 }
 
 SearchResultsFrame::~SearchResultsFrame()

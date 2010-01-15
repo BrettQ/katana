@@ -1,9 +1,9 @@
-
 #include "mainwindow.h"
 
 #include "bible_text_source.h"
 #include "infinite_scroll.h"
 #include "search_dialog.h"
+#include "select_dialog.h"
 #include "search_results.h"
 
 #include <iostream>
@@ -76,7 +76,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
 void MainWindow::createActions()
 {
 	mSelectVerseAction = new QAction("Go to Verse", this);
-	connect(mSelectVerseAction, SIGNAL(triggered()), this, SLOT(selectVerse()));
+	connect(mSelectVerseAction, SIGNAL(triggered()), this, SLOT(onSelectVerse()));
 
 	mSelectTransAction = new QAction("Select Translation", this);
 	connect(mSelectTransAction, SIGNAL(triggered()), this, SLOT(selectTranslation()));
@@ -135,11 +135,22 @@ bool MainWindow::event(QEvent* ev)
 	return QWidget::event(ev);
 }
 
-void MainWindow::selectVerse()
+void MainWindow::keyPressEvent(QKeyEvent* event)
+{
+	if (event->key() >= Qt::Key_A && event->key() <= Qt::Key_Z)
+		selectVerse(event->text());
+}
+
+void MainWindow::onSelectVerse()
+{
+	selectVerse("");
+}
+
+void MainWindow::selectVerse(QString startingFilter)
 {
 	QString bookName;
 	int chapter = 0;
-	if (::selectVerse(this, mBible, bookName, chapter))
+	if (::selectVerse(this, mBible, startingFilter, bookName, chapter))
 	{
 		TextSource* bibleSource = getBibleTextSource(mBible, bookName);
 		InfiniteScrollViewer* viewer = \
@@ -204,128 +215,5 @@ void MainWindow::orientationChanged(const QString& newOrientation)
 		setPortrait();
 	else
 		setLandscape();
-}
-
-bool SelectDialog::select(QWidget* parent, QList<QStringList> choices,
-							QString choicesDescrip, QString& selectedChoice)
-{
-	selectedChoice = "";
-
-	SelectDialog dlg(parent, choices, choicesDescrip);
-	if (dlg.exec() != QDialog::Accepted)
-		return false;
-	selectedChoice = dlg.mSelectedChoice;
-	return true;
-}
-
-SelectDialog::SelectDialog(QWidget* parent, QList<QStringList> choices,
-						QString choicesDescrip) : QDialog(parent)
-{
-	mChoices = choices;
-
-	setMinimumHeight(800);
-	setModal(true);
-	setWindowTitle("Select " + choicesDescrip);
-
-	mSignalMapper = new QSignalMapper(this);
-	connect(mSignalMapper, SIGNAL(mapped(const QString&)), this,
-			SLOT(selectChoice(const QString&)));
-
-	QVBoxLayout* mainLayout = new QVBoxLayout();
-	mainLayout->setSpacing(0);
-	mainLayout->setContentsMargins(0, 0, 0, 0);
-	for (int i = 0; i < mChoices.count(); i++)
-		appendChoices(mChoices[i], mainLayout);
-
-	QScrollArea* scroll = new QScrollArea;
-	scroll->setFrameShape(QFrame::NoFrame);
-	scroll->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding,
-									QSizePolicy::Preferred));
-	mScroller = new QMaemo5KineticScroller(scroll);
-
-	QFrame* frame = new QFrame();
-	frame->setLayout(mainLayout);
-	frame->setStyleSheet("QPushButton{"
-						"padding: 12px; "
-						"margin: 0px; "
-						"min-width: 65px;"
-						"}");
-	scroll->setWidget(frame);
-
-	mLayout.addWidget(scroll);
-	setContentsMargins(0, 0, 0, 0);
-	setLayout(&mLayout);
-}
-
-void SelectDialog::appendChoices(QStringList choices,
-								QVBoxLayout* parentLayout)
-{
-	int max_width = parentWidget()->width();
-	QHBoxLayout* currentRow = NULL;
-	int currentWidth = 0;
-	for (int i = 0; i < choices.count(); i++)
-	{
-		QPushButton* button = new QPushButton(choices[i]);
-		int buttonWidth = button->sizeHint().width();
-		if (!currentRow || currentWidth + buttonWidth > max_width)
-		{
-			currentRow = new QHBoxLayout();
-			currentRow->setSpacing(0);
-			parentLayout->addLayout(currentRow);
-			currentWidth = 0;
-		}
-		currentRow->addWidget(button);
-		currentWidth += buttonWidth;
-
-		mSignalMapper->setMapping(button, choices[i]);
-		connect(button, SIGNAL(clicked()), mSignalMapper, SLOT(map()));
-	}
-	currentRow->insertStretch(100);
-}
-
-void SelectDialog::selectChoice(const QString& choice)
-{
-	mSelectedChoice = choice;
-	accept();
-}
-
-bool selectVerse(QWidget* parent, BibleInfo* bible,
-				QString& bookName, int& chapter)
-{
-	QList<QStringList> choices;
-	choices.push_back(bible->getOTBookNames());
-	choices.push_back(bible->getNTBookNames());
-
-	QString selectedChoice;
-	if (!SelectDialog::select(parent, choices, "Book", selectedChoice))
-		return false;
-	QString selectedBook = selectedChoice;
-	int selectedBookNum = bible->getBookNum(selectedBook);
-
-	choices.clear();
-	QStringList subChoices;
-	for (int i = 0; i < bible->getNumChapters(selectedBookNum); i++)
-		subChoices.push_back(QString("%1").arg(i + 1));
-	choices.push_back(subChoices);
-	if (!SelectDialog::select(parent, choices, "Chapter", selectedChoice))
-		return false;
-	int selectedChapter = selectedChoice.toInt() - 1;
-
-	bookName = selectedBook;
-	chapter = selectedChapter;
-	return true;
-}
-
-bool selectTranslation(QWidget* parent, QString& translation)
-{
-	QList<QStringList> choices;
-	choices.push_back(getAvailableTranslations());
-
-	QString selectedChoice;
-	if (!SelectDialog::select(parent, choices, "Translation", selectedChoice))
-		return false;
-
-	translation = selectedChoice;
-	return true;
 }
 

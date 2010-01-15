@@ -9,6 +9,7 @@ class InfiniteScrollViewer;
 class Key;
 class QSignalMapper;
 class SearchResultsFrame;
+class QFrame;
 class MainWindow : public QMainWindow
 {
 	Q_OBJECT
@@ -30,8 +31,11 @@ protected:
 
 	bool event(QEvent* ev);
 
+	virtual void keyPressEvent(QKeyEvent* event);
+	void selectVerse(QString startingFilter);
+
 protected slots:
-	void selectVerse();
+	void onSelectVerse();
 	void selectTranslation();
 	void search();
 	void goToVerse(QString verse);
@@ -51,38 +55,4 @@ private:
 	QAction* mSearchAction;
 };
 
-class QMaemo5KineticScroller;
-class SelectDialog : public QDialog
-{
-	Q_OBJECT
-
-public:
-	// choicesDescip should be a single noun (e.g. "Verse")
-	static bool select(QWidget* parent, QList<QStringList> choices,
-						QString choicesDescrip, QString& selectedChoice);
-
-protected:
-	SelectDialog(QWidget* parent, QList<QStringList> choices,
-				QString choicesDescrip);
-
-protected:
-	void appendChoices(QStringList choices, QVBoxLayout* parentLayout);
-
-private slots:
-	void selectChoice(const QString& choice);
-
-protected:
-	QList<QStringList> mChoices;
-
-	QString mSelectedChoice;
-
-	QHBoxLayout mLayout;
-	QSignalMapper* mSignalMapper;
-	QList<QWidget*> mButtons;
-	QMaemo5KineticScroller* mScroller;
-};
-
-bool selectVerse(QWidget* parent, BibleInfo* bible,
-				QString& bookName, int& chapter);
-bool selectTranslation(QWidget* parent, QString& translation);
 
