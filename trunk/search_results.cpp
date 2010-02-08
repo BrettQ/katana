@@ -4,7 +4,6 @@
 
 #include <iostream>
 
-#include <Qt/qmaemo5kineticscroller.h>
 #include <QPushButton>
 #include <QScrollArea>
 #include <QScrollBar>
@@ -56,7 +55,6 @@ void SearchResultsFrame::handleResults(QList<Key> results)
 	mScroll->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 	mScroll->setSizePolicy(QSizePolicy(QSizePolicy::Maximum,
 									QSizePolicy::Preferred));
-	mScroller = new QMaemo5KineticScroller(mScroll);
 
 	QFrame* frame = new QFrame();
 	frame->setStyleSheet("QPushButton{"

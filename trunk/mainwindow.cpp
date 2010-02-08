@@ -14,13 +14,17 @@
 #include <QtDBus/QDBusConnection>
 #include <QtDBus/QDBusMessage>
 #include <QtGui>
-#include <Qt/qmaemo5kineticscroller.h>
+#include <QX11Info>
+#include <X11/X.h>
+#include <X11/Xatom.h>
+#include <X11/Xlib.h>
 
 MainWindow::MainWindow() : QMainWindow()
 {
 	mSelectVerseAction = NULL;
 	mSelectTransAction = NULL;
 	mSearchAction = NULL;
+	mShowPosition = true;
 
 	setWindowTitle("Katana");
 
@@ -36,7 +40,7 @@ MainWindow::MainWindow() : QMainWindow()
 	QFrame* frame = new QFrame;
 	mLayout = new QHBoxLayout;
 	mpViewer = new InfiniteScrollViewer(this, bibleSource, chapter,
-										verse, false, "");
+										verse, "", mShowPosition);
 	mLayout->addWidget(mpViewer);
 	mSearchResults = new SearchResultsFrame();
 	mLayout->addWidget(mSearchResults);
@@ -56,6 +60,18 @@ MainWindow::MainWindow() : QMainWindow()
 										MCE_DEVICE_ORIENTATION_SIG,
 										this,
 										SLOT(orientationChanged(QString)));
+
+	// Tell maemo-status-volume to grab/ungrab increase/decrease keys
+	unsigned long val = 1;
+	Atom atom = XInternAtom( QX11Info::display(), "_HILDON_ZOOM_KEY_ATOM", 0);
+	XChangeProperty(QX11Info::display(),
+					winId(),
+					atom,
+					XA_INTEGER,
+					32,
+					PropModeReplace,
+					(unsigned char *)&val,
+					1);
 }
 
 MainWindow::~MainWindow()
@@ -98,18 +114,22 @@ void MainWindow::replaceViewer(InfiniteScrollViewer* viewer)
 	mLayout->insertWidget(0, viewer);
 	mpViewer = viewer;
 	viewer->show();
+	item->widget()->hide();
+	delete item->widget();
 	delete item;
 	viewer->setFocus(Qt::TabFocusReason);
 }
 
 void MainWindow::setLandscape()
 {
-	setAttribute(Qt::WA_Maemo5ForceLandscapeOrientation, true);
+	setAttribute(Qt::WA_Maemo5ForceLandscapeOrientation, false);
+	setAttribute(Qt::WA_Maemo5ForcePortraitOrientation, true);
 }
 
 void MainWindow::setPortrait()
 {
-	setAttribute(Qt::WA_Maemo5ForcePortraitOrientation, true);
+	setAttribute(Qt::WA_Maemo5ForcePortraitOrientation, false);
+	setAttribute(Qt::WA_Maemo5ForceLandscapeOrientation, true);
 }
 
 bool MainWindow::event(QEvent* ev)
@@ -137,6 +157,10 @@ bool MainWindow::event(QEvent* ev)
 
 void MainWindow::keyPressEvent(QKeyEvent* event)
 {
+	if (event->key() == Qt::Key_F7)
+		mpViewer->scrollPage(false);
+	if (event->key() == Qt::Key_F8)
+		mpViewer->scrollPage(true);
 	if (event->key() >= Qt::Key_A && event->key() <= Qt::Key_Z)
 		selectVerse(event->text());
 }
@@ -155,7 +179,7 @@ void MainWindow::selectVerse(QString startingFilter)
 		TextSource* bibleSource = getBibleTextSource(mBible, bookName);
 		InfiniteScrollViewer* viewer = \
 			new InfiniteScrollViewer(this, bibleSource,
-									chapter, 0, true, "");
+									chapter, 0, "", mShowPosition);
 
 		replaceViewer(viewer);
 		mSearchResults->hideResults();
@@ -175,7 +199,7 @@ void MainWindow::selectTranslation()
 		TextSource* bibleSource = getBibleTextSource(mBible, bookName);
 		InfiniteScrollViewer* viewer = \
 			new InfiniteScrollViewer(this, bibleSource, chapter,
-									verse, false, "");
+									verse, "", mShowPosition);
 
 		replaceViewer(viewer);
 		mSearchResults->hideResults();
@@ -203,14 +227,16 @@ void MainWindow::goToVerse(QString verse)
 	TextSource* bibleSource = getBibleTextSource(mBible, key.mBook);
 	InfiniteScrollViewer* viewer = \
 		new InfiniteScrollViewer(this, bibleSource, key.mChapter,
-								key.mVerse, true, mCurrentSearchText);
+								key.mVerse, mCurrentSearchText,
+								mShowPosition);
 
 	replaceViewer(viewer);
 }
 void MainWindow::orientationChanged(const QString& newOrientation)
 {
 	bool bPortrait = newOrientation == QLatin1String(MCE_ORIENTATION_PORTRAIT);
-	mpViewer->setShouldShowPosition(!bPortrait);
+	mShowPosition = !bPortrait;
+	mpViewer->setShouldShowPosition(mShowPosition);
 	if (bPortrait)
 		setPortrait();
 	else

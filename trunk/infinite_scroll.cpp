@@ -1,14 +1,16 @@
 
 #include "infinite_scroll.h"
 
+#include <QAbstractKineticScroller>
+#include <QApplication>
 #include <QEvent>
 #include <QGestureEvent>
 #include <QScrollBar>
 #include <QString>
 #include <QSwipeGesture>
 #include <QTextBlock>
+#include <QTextCodec>
 #include <QTimer>
-#include <Qt/qmaemo5kineticscroller.h>
 
 #include <iostream>
 
@@ -52,14 +54,14 @@ InfiniteScrollViewer::InfiniteScrollViewer(QWidget* mainWindow,
 										TextSource* textSource,
 										int startingSection,
 										int startingParagraph,
-										bool highlightStart,
-										QString searchText) : QTextEdit(mainWindow)
+										QString searchText,
+										bool showPosition) : QTextBrowser(mainWindow)
 {
 	mTextSource = textSource;
 	mDocument = new QTextDocument();
 	mMainWindow = mainWindow;
 
-    qApp->setStyleSheet("QTextEdit { border: 0; }");
+	qApp->setStyleSheet("QTextBrowser { border: 0; }");
 
 	if (searchText.length() > 0)
 		mHighlighter = new SearchResultsHighlighter(mDocument, searchText);
@@ -70,15 +72,15 @@ InfiniteScrollViewer::InfiniteScrollViewer(QWidget* mainWindow,
 	setReadOnly(true);
 	setTextInteractionFlags(Qt::NoTextInteraction);
 	setDocument(mDocument);
-	mScroller = new QMaemo5KineticScroller(this);
-	mScroller->setMaximumVelocity(2000);
-	mScroller->setDecelerationFactor(0.75);
+	setAttribute(Qt::WA_OpaquePaintEvent);
 
+	mScroller = property("kineticScroller").value<QAbstractKineticScroller *>();
+
+	QTextCodec::setCodecForCStrings(QTextCodec::codecForName("utf8"));
 	grabGesture(Qt::SwipeGesture);
 
-	m_bShowPosition = true;
+	mShowPosition = showPosition;
 
-	mHighlightStart = highlightStart;
 	mFirstSection = 0;
 	mFirstParagraph = 0;
 	mLastSection = 0;
@@ -118,8 +120,17 @@ int InfiniteScrollViewer::getCurrentParagraph()
 
 void InfiniteScrollViewer::setShouldShowPosition(bool bShow)
 {
-	m_bShowPosition = bShow;
+	mShowPosition = bShow;
 	updateTitle();
+}
+
+void InfiniteScrollViewer::scrollPage(bool bUp)
+{
+	int iShift = height() - 20;
+	if (bUp)
+		iShift *= -1;
+	int iTarget = verticalScrollBar()->value() + iShift;
+	verticalScrollBar()->setValue(iTarget);
 }
 
 void InfiniteScrollViewer::fillInitial(int section, int startingParagraph)
@@ -173,17 +184,16 @@ void InfiniteScrollViewer::fillTopText()
 
 void InfiniteScrollViewer::fillBottomText()
 {
-	if (getBottomPadding() < 500)
+	int startingScroll = verticalScrollBar()->value();
+
+	while (getBottomPadding() < height() + 100 && !filledToEnd())
 	{
 		int addedVerses = 0;
-		int startingScroll = verticalScrollBar()->value();
 
 		QTextCursor cursor(mDocument);
 		cursor.movePosition(QTextCursor::End);
 		cursor.beginEditBlock();
-		while (addedVerses < 5 &&
-			(mLastSection < mTextSource->getNumSections() - 1 ||
-			mLastParagraph < mTextSource->getNumParagraphs(mLastSection) - 1))
+		while (addedVerses < 5 && !filledToEnd())
 		{
 			int section = mLastSection;
 			int paragraph = mLastParagraph + 1;
@@ -201,38 +211,20 @@ void InfiniteScrollViewer::fillBottomText()
 		}
 
 		cursor.endEditBlock();
-		verticalScrollBar()->setValue(startingScroll);
-		rebuildAnchorPositions();
 	}
+	verticalScrollBar()->setValue(startingScroll);
+	rebuildAnchorPositions();
+}
+
+bool InfiniteScrollViewer::filledToEnd()
+{
+	return mLastSection >= mTextSource->getNumSections() - 1 &&
+		mLastParagraph >= mTextSource->getNumParagraphs(mLastSection) - 1;
 }
 
 void InfiniteScrollViewer::initialScroll()
 {
 	scrollTo(mCurrentSection, mCurrentParagraph);
-
-	if (mHighlightStart)
-	{
-		QString name = QString("%1_%2").arg(mCurrentSection).
-									arg(mCurrentParagraph);
-		for (int i = 0; i < mAnchorNames.count(); i++)
-		{
-			if (mAnchorNames[i] == name)
-			{
-				mHighlightStart = false;
-				QTextCursor cursor(mDocument);
-				cursor.beginEditBlock();
-				cursor.movePosition(QTextCursor::Right,
-									QTextCursor::MoveAnchor,
-									mAnchorPositions[i]);
-				cursor.movePosition(QTextCursor::WordRight,
-									QTextCursor::KeepAnchor);
-				QTextCharFormat format = cursor.charFormat();
-				format.setForeground(Qt::blue);
-				cursor.setCharFormat(format);
-				cursor.endEditBlock();
-			}
-		}
-	}
 }
 
 void InfiniteScrollViewer::insertParagraph(QTextCursor& cursor, int section, int paragraph)
@@ -289,7 +281,7 @@ void InfiniteScrollViewer::updateTitle()
 	QString descrip = getSourceDescrip();
 	int section = getCurrentSection();
 	int paragraph = getCurrentParagraph();
-	if (m_bShowPosition)
+	if (mShowPosition)
 	{
 		mMainWindow->setWindowTitle(QString("Katana - %1 %2:%3").arg(descrip).
 											arg(section+1).arg(paragraph+1));
@@ -331,7 +323,7 @@ int InfiniteScrollViewer::getBottomPadding()
 
 void InfiniteScrollViewer::showEvent(QShowEvent* event)
 {
-	QTextEdit::showEvent(event);
+	QTextBrowser::showEvent(event);
 	repaint();
 	fillInitial(mCurrentSection, mCurrentParagraph);
 
@@ -344,7 +336,7 @@ void InfiniteScrollViewer::showEvent(QShowEvent* event)
 }
 void InfiniteScrollViewer::resizeEvent(QResizeEvent* event)
 {
-	QTextEdit::resizeEvent(event);
+	QTextBrowser::resizeEvent(event);
 	initialScroll();
 }
 
@@ -367,7 +359,7 @@ bool InfiniteScrollViewer::event(QEvent* event)
 		}
 		return true;
 	}
-	return QTextEdit::event(event);
+	return QTextBrowser::event(event);
 }
 
 void InfiniteScrollViewer::onScroll()

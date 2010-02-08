@@ -5,7 +5,6 @@ class QVBoxLayout;
 class QPushButton;
 class QScrollArea;
 class QSignalMapper;
-class QMaemo5KineticScroller;
 class SearchResultsFrame : public QFrame
 {
 	Q_OBJECT
@@ -27,5 +26,4 @@ protected:
 	QVBoxLayout* mLayout;
 	QSignalMapper* mSearchResultsMapper;
 	QScrollArea* mScroll;
-	QMaemo5KineticScroller* mScroller;
 };

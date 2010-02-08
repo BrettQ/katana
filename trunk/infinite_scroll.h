@@ -1,7 +1,7 @@
 
 #include <QString>
 #include <QSyntaxHighlighter>
-#include <QTextEdit>
+#include <QTextBrowser>
 
 // A pure-interface class used by InfiniteScrollViewer.
 class TextSource
@@ -34,14 +34,14 @@ private:
 class QTextDocument;
 class QTextCursor;
 class QSyntaxHighlighter;
-class QMaemo5KineticScroller;
-class InfiniteScrollViewer : public QTextEdit
+class QAbstractKineticScroller;
+class InfiniteScrollViewer : public QTextBrowser
 {
 	Q_OBJECT
 public:
 	InfiniteScrollViewer(QWidget* mainWindow, TextSource* textSource,
-						int starting_section, int starting_paragraph,
-						bool highlightStart, QString searchText);
+						int startingSection, int startingParagraph,
+						QString searchText, bool showPosition);
 	~InfiniteScrollViewer();
 
 	QString getSourceName();
@@ -51,10 +51,13 @@ public:
 
 	void setShouldShowPosition(bool bShow);
 
+	void scrollPage(bool bUp);
+
 protected:
-	void fillInitial(int starting_section, int starting_paragraph);
+	void fillInitial(int startingSection, int startingParagraph);
 	void fillTopText();
 	void fillBottomText();
+	bool filledToEnd();
 	void insertParagraph(QTextCursor& cursor, int section, int paragraph);
 	void insertSectionStart(QTextCursor& cursor, int section);
 
@@ -86,11 +89,10 @@ private:
 	QTextDocument* mDocument;
 	QWidget* mMainWindow;
 	QSyntaxHighlighter* mHighlighter;
-	QMaemo5KineticScroller* mScroller;
+	QAbstractKineticScroller* mScroller;
 
-	bool m_bShowPosition;
+	bool mShowPosition;
 
-	int mHighlightStart;
 	int mFirstSection;
 	int mFirstParagraph;
 	int mLastSection;

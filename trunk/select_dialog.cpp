@@ -86,7 +86,6 @@ SelectDialog::SelectDialog(QWidget* parent, QList<QStringList> choices,
 	scroll->setFrameShape(QFrame::NoFrame);
 	scroll->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding,
 									QSizePolicy::Preferred));
-	mScroller = new QMaemo5KineticScroller(scroll);
 
 	mFrame = new QFrame();
 	mFrame->setStyleSheet("QPushButton{"

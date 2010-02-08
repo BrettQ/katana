@@ -1,4 +1,4 @@
-#include "precompiled.h"
+#include <QtGui>
 
 class SelectLayout;
 class SelectDialog : public QDialog
@@ -39,7 +39,6 @@ protected:
     SelectLayout* mLayout;
 	QFrame* mFrame;
 	QSignalMapper* mSignalMapper;
-	QMaemo5KineticScroller* mScroller;
 };
 
 class BibleInfo;
