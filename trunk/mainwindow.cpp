@@ -24,7 +24,7 @@ MainWindow::MainWindow() : QMainWindow()
 	mSelectVerseAction = NULL;
 	mSelectTransAction = NULL;
 	mSearchAction = NULL;
-	mShowPosition = true;
+	mShowShortTitle = false;
 
 	setWindowTitle("Katana");
 
@@ -40,7 +40,7 @@ MainWindow::MainWindow() : QMainWindow()
 	QFrame* frame = new QFrame;
 	mLayout = new QHBoxLayout;
 	mpViewer = new InfiniteScrollViewer(this, bibleSource, chapter,
-										verse, "", mShowPosition);
+										verse, "", mShowShortTitle);
 	mLayout->addWidget(mpViewer);
 	mSearchResults = new SearchResultsFrame();
 	mLayout->addWidget(mSearchResults);
@@ -122,14 +122,12 @@ void MainWindow::replaceViewer(InfiniteScrollViewer* viewer)
 
 void MainWindow::setLandscape()
 {
-	setAttribute(Qt::WA_Maemo5ForceLandscapeOrientation, false);
-	setAttribute(Qt::WA_Maemo5ForcePortraitOrientation, true);
+	setAttribute(Qt::WA_Maemo5LandscapeOrientation, true);
 }
 
 void MainWindow::setPortrait()
 {
-	setAttribute(Qt::WA_Maemo5ForcePortraitOrientation, false);
-	setAttribute(Qt::WA_Maemo5ForceLandscapeOrientation, true);
+	setAttribute(Qt::WA_Maemo5PortraitOrientation, true);
 }
 
 bool MainWindow::event(QEvent* ev)
@@ -179,7 +177,7 @@ void MainWindow::selectVerse(QString startingFilter)
 		TextSource* bibleSource = getBibleTextSource(mBible, bookName);
 		InfiniteScrollViewer* viewer = \
 			new InfiniteScrollViewer(this, bibleSource,
-									chapter, 0, "", mShowPosition);
+									chapter, 0, "", mShowShortTitle);
 
 		replaceViewer(viewer);
 		mSearchResults->hideResults();
@@ -199,7 +197,7 @@ void MainWindow::selectTranslation()
 		TextSource* bibleSource = getBibleTextSource(mBible, bookName);
 		InfiniteScrollViewer* viewer = \
 			new InfiniteScrollViewer(this, bibleSource, chapter,
-									verse, "", mShowPosition);
+									verse, "", mShowShortTitle);
 
 		replaceViewer(viewer);
 		mSearchResults->hideResults();
@@ -228,15 +226,15 @@ void MainWindow::goToVerse(QString verse)
 	InfiniteScrollViewer* viewer = \
 		new InfiniteScrollViewer(this, bibleSource, key.mChapter,
 								key.mVerse, mCurrentSearchText,
-								mShowPosition);
+								mShowShortTitle);
 
 	replaceViewer(viewer);
 }
 void MainWindow::orientationChanged(const QString& newOrientation)
 {
 	bool bPortrait = newOrientation == QLatin1String(MCE_ORIENTATION_PORTRAIT);
-	mShowPosition = !bPortrait;
-	mpViewer->setShouldShowPosition(mShowPosition);
+	mShowShortTitle = bPortrait;
+	mpViewer->setShowShortTitle(mShowShortTitle);
 	if (bPortrait)
 		setPortrait();
 	else

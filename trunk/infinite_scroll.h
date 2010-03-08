@@ -8,7 +8,7 @@ class TextSource
 {
 public:
 	virtual QString getSourceName()=0;
-	virtual QString getSourceDescrip()=0;
+	virtual QString getSourceDescrip(bool bShort)=0;
 	virtual int getNumSections()=0;
 	virtual int getNumParagraphs(int section)=0;
 	virtual QString getText(int section, int paragraph)=0;
@@ -34,28 +34,27 @@ private:
 class QTextDocument;
 class QTextCursor;
 class QSyntaxHighlighter;
-class QAbstractKineticScroller;
 class InfiniteScrollViewer : public QTextBrowser
 {
 	Q_OBJECT
 public:
 	InfiniteScrollViewer(QWidget* mainWindow, TextSource* textSource,
 						int startingSection, int startingParagraph,
-						QString searchText, bool showPosition);
+						QString searchText, bool shortTitle);
 	~InfiniteScrollViewer();
 
 	QString getSourceName();
-	QString getSourceDescrip();
 	int getCurrentSection();
 	int getCurrentParagraph();
 
-	void setShouldShowPosition(bool bShow);
+	void setShowShortTitle(bool bShow);
 
 	void scrollPage(bool bUp);
 
 protected:
 	void fillInitial(int startingSection, int startingParagraph);
-	void fillTopText();
+	void fillTopTextIfNecessary();
+	void fillBottomTextIfNecessary();
 	void fillBottomText();
 	bool filledToEnd();
 	void insertParagraph(QTextCursor& cursor, int section, int paragraph);
@@ -89,9 +88,8 @@ private:
 	QTextDocument* mDocument;
 	QWidget* mMainWindow;
 	QSyntaxHighlighter* mHighlighter;
-	QAbstractKineticScroller* mScroller;
 
-	bool mShowPosition;
+	bool mShowShortTitle;
 
 	int mFirstSection;
 	int mFirstParagraph;

@@ -1,7 +1,6 @@
 
 #include "infinite_scroll.h"
 
-#include <QAbstractKineticScroller>
 #include <QApplication>
 #include <QEvent>
 #include <QGestureEvent>
@@ -55,7 +54,7 @@ InfiniteScrollViewer::InfiniteScrollViewer(QWidget* mainWindow,
 										int startingSection,
 										int startingParagraph,
 										QString searchText,
-										bool showPosition) : QTextBrowser(mainWindow)
+										bool shortTitle) : QTextBrowser(mainWindow)
 {
 	mTextSource = textSource;
 	mDocument = new QTextDocument();
@@ -74,12 +73,10 @@ InfiniteScrollViewer::InfiniteScrollViewer(QWidget* mainWindow,
 	setDocument(mDocument);
 	setAttribute(Qt::WA_OpaquePaintEvent);
 
-	mScroller = property("kineticScroller").value<QAbstractKineticScroller *>();
-
 	QTextCodec::setCodecForCStrings(QTextCodec::codecForName("utf8"));
 	grabGesture(Qt::SwipeGesture);
 
-	mShowPosition = showPosition;
+	mShowShortTitle = shortTitle;
 
 	mFirstSection = 0;
 	mFirstParagraph = 0;
@@ -103,11 +100,6 @@ QString InfiniteScrollViewer::getSourceName()
 	return mTextSource->getSourceName();
 }
 
-QString InfiniteScrollViewer::getSourceDescrip()
-{
-	return mTextSource->getSourceDescrip();
-}
-
 int InfiniteScrollViewer::getCurrentSection()
 {
 	return mCurrentSection;
@@ -118,9 +110,9 @@ int InfiniteScrollViewer::getCurrentParagraph()
 	return mCurrentParagraph;
 }
 
-void InfiniteScrollViewer::setShouldShowPosition(bool bShow)
+void InfiniteScrollViewer::setShowShortTitle(bool bShow)
 {
-	mShowPosition = bShow;
+	mShowShortTitle = bShow;
 	updateTitle();
 }
 
@@ -138,7 +130,7 @@ void InfiniteScrollViewer::fillInitial(int section, int startingParagraph)
 	QTextCursor cursor(mDocument);
 	insertSectionStart(cursor, section);
 	int lastParagraph = startingParagraph + 10;
-	if (lastParagraph < mTextSource->getNumParagraphs(section))
+	if (lastParagraph >= mTextSource->getNumParagraphs(section))
 		lastParagraph = mTextSource->getNumParagraphs(section);
 	for (int i = 0; i < lastParagraph; i++)
 		insertParagraph(cursor, section, i);
@@ -148,10 +140,12 @@ void InfiniteScrollViewer::fillInitial(int section, int startingParagraph)
 	mLastSection = section;
 	mLastParagraph = lastParagraph;
 
+	fillBottomText();
+
 	rebuildAnchorPositions();
 }
 
-void InfiniteScrollViewer::fillTopText()
+void InfiniteScrollViewer::fillTopTextIfNecessary()
 {
 	// We have to add a section at a time, since that's the only
 	// way to create a document reflow. (Adding a section at a
@@ -182,38 +176,42 @@ void InfiniteScrollViewer::fillTopText()
 	}
 }
 
-void InfiniteScrollViewer::fillBottomText()
+void InfiniteScrollViewer::fillBottomTextIfNecessary()
 {
 	int startingScroll = verticalScrollBar()->value();
 
 	while (getBottomPadding() < height() + 100 && !filledToEnd())
-	{
-		int addedVerses = 0;
+		fillBottomText();
 
-		QTextCursor cursor(mDocument);
-		cursor.movePosition(QTextCursor::End);
-		cursor.beginEditBlock();
-		while (addedVerses < 5 && !filledToEnd())
-		{
-			int section = mLastSection;
-			int paragraph = mLastParagraph + 1;
-			if (paragraph >= mTextSource->getNumParagraphs(section))
-			{
-				section = mLastSection + 1;
-				paragraph = 0;
-				insertSectionStart(cursor, section);
-			}
-
-			insertParagraph(cursor, section, paragraph);
-			mLastSection = section;
-			mLastParagraph = paragraph;
-			addedVerses++;
-		}
-
-		cursor.endEditBlock();
-	}
 	verticalScrollBar()->setValue(startingScroll);
 	rebuildAnchorPositions();
+}
+
+void InfiniteScrollViewer::fillBottomText()
+{
+	int addedVerses = 0;
+
+	QTextCursor cursor(mDocument);
+	cursor.movePosition(QTextCursor::End);
+	cursor.beginEditBlock();
+	while (addedVerses < 5 && !filledToEnd())
+	{
+		int section = mLastSection;
+		int paragraph = mLastParagraph + 1;
+		if (paragraph >= mTextSource->getNumParagraphs(section))
+		{
+			section = mLastSection + 1;
+			paragraph = 0;
+			insertSectionStart(cursor, section);
+		}
+
+		insertParagraph(cursor, section, paragraph);
+		mLastSection = section;
+		mLastParagraph = paragraph;
+		addedVerses++;
+	}
+
+	cursor.endEditBlock();
 }
 
 bool InfiniteScrollViewer::filledToEnd()
@@ -278,16 +276,15 @@ void InfiniteScrollViewer::updatePosition()
 
 void InfiniteScrollViewer::updateTitle()
 {
-	QString descrip = getSourceDescrip();
+	QString descrip = mTextSource->getSourceDescrip(mShowShortTitle);
 	int section = getCurrentSection();
 	int paragraph = getCurrentParagraph();
-	if (mShowPosition)
-	{
-		mMainWindow->setWindowTitle(QString("Katana - %1 %2:%3").arg(descrip).
-											arg(section+1).arg(paragraph+1));
-	}
-	else
-		mMainWindow->setWindowTitle("Katana");
+	QString title;
+	if (!mShowShortTitle)
+		title += "Katana - ";
+
+	title += QString("%1 %2:%3").arg(descrip).arg(section+1).arg(paragraph+1);
+	mMainWindow->setWindowTitle(title);
 }
 
 void InfiniteScrollViewer::rebuildAnchorPositions()
@@ -328,7 +325,6 @@ void InfiniteScrollViewer::showEvent(QShowEvent* event)
 	fillInitial(mCurrentSection, mCurrentParagraph);
 
 	updateTitle();
-	fillBottomText();
 
 	// We have to wait until all text is rendered, so that
 	// we can scroll to the right place.
@@ -371,7 +367,7 @@ void InfiniteScrollViewer::onScrollTimer()
 {
 	updatePosition();
 	updateTitle();
-	fillBottomText();
-	fillTopText();
+	fillBottomTextIfNecessary();
+	fillTopTextIfNecessary();
 }
 

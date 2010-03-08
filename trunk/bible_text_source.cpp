@@ -4,6 +4,7 @@
 
 #include <iostream>
 
+#include <QMap>
 #include <QProgressDialog>
 
 #include <sword/listkey.h>
@@ -74,6 +75,14 @@ int BibleInfo::getBookNum(QString bookName)
 	}
 	delete key;
 	return -1;
+}
+
+QString BibleInfo::getShortBookName(int bookNum)
+{
+	sword::VerseKey* key = (sword::VerseKey*)mModule->CreateKey();
+	(*key) = sword::TOP;
+	key->Book(bookNum);
+	return key->getBookAbbrev();
 }
 
 int BibleInfo::getNumChapters(int book)
@@ -165,15 +174,19 @@ public:
 		mBible = bible;
 		mBookName = bookName;
 		mBookNum = bible->getBookNum(bookName);
+		mShortBookName = bible->getShortBookName(mBookNum);
 	}
 
 	virtual QString getSourceName()
 	{
 		return mBookName;
 	}
-	virtual QString getSourceDescrip()
+	virtual QString getSourceDescrip(bool shortTitle)
 	{
-		return mBible->getBibleName() + " - " + mBookName;
+		if (shortTitle)
+			return mShortBookName;
+		else
+			return mBible->getBibleName() + " - " + mBookName;
 	}
 	virtual int getNumSections()
 	{
@@ -181,7 +194,12 @@ public:
 	}
 	virtual int getNumParagraphs(int section)
 	{
-		return mBible->getNumVerses(mBookNum, section);
+		if (mCachedNumVerses.contains(section))
+			return mCachedNumVerses[section];
+		
+		int verses = mBible->getNumVerses(mBookNum, section);
+		mCachedNumVerses[section] = verses;
+		return verses;
 	}
 	virtual QString getText(int section, int paragraph)
 	{
@@ -191,7 +209,9 @@ public:
 private:
 	BibleInfo* mBible;
 	QString mBookName;
+	QString mShortBookName;
 	int mBookNum;
+	QMap<int, int> mCachedNumVerses;
 };
 
 QStringList getAvailableTranslations()

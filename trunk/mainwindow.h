@@ -45,7 +45,7 @@ private:
 	BibleInfo* mBible;
 	InfiniteScrollViewer* mpViewer;
 
-	bool mShowPosition;
+	bool mShowShortTitle;
 	QHBoxLayout* mLayout;
 	SearchResultsFrame* mSearchResults;
 	QAction* mSelectVerseAction;

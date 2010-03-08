@@ -36,6 +36,7 @@ public:
 	QStringList getNTBookNames();
 
 	int getBookNum(QString bookName);
+	QString getShortBookName(int bookNum);
 	int getNumChapters(int book);
 	int getNumVerses(int book, int chapter);
 	QString getVerseText(int book, int chapter, int verse);
