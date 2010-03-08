@@ -95,17 +95,8 @@ SelectDialog::SelectDialog(QWidget* parent, QList<QStringList> choices,
 						"}");
 	setChoices();
 	QHBoxLayout* layout = new QHBoxLayout;
-	// This if statement is to work around a stupid bug in Qt:
-	// if a scrollarea is used, but isn't needed, one cannot click
-	// the buttons. This bug was introduced in the 2010-01-11 snapshot.
-	int neededHeight = mLayout->heightForWidth(parentWidget()->width());
-	if (neededHeight > parentWidget()->height() - 50)
-	{
-		scroll->setWidget(mFrame);
-		layout->addWidget(scroll);
-	}
-	else
-		layout->addWidget(mFrame);
+	scroll->setWidget(mFrame);
+	layout->addWidget(scroll);
 
 	setContentsMargins(0, 0, 0, 0);
 	setLayout(layout);
