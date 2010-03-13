@@ -144,7 +144,10 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
 	if (event->key() == Qt::Key_F8)
 		mpViewer->scrollPage(true);
 	if (event->key() >= Qt::Key_A && event->key() <= Qt::Key_Z)
-		selectVerse(event->text());
+	{
+		if (!onDialogKey(event->key(), event->text()))
+			selectVerse(event->text());
+	}
 }
 
 void MainWindow::onSelectVerse()

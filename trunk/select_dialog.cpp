@@ -8,6 +8,8 @@
 #include <assert.h>
 #include <iostream>
 
+Selector* fgActiveDialog = NULL;
+
 class SelectLayout : public QLayout
 {
 public:
@@ -36,35 +38,37 @@ private:
 	QList<bool> mBreakBeforeList;
 };
 
-bool SelectDialog::select(QWidget* parent, QList<QStringList> choices,
+bool Selector::select(QWidget* parent, QList<QStringList> choices,
 						QString choicesDescrip, QString startingFilter,
 						QString& selectedChoice)
 {
 	selectedChoice = "";
 
-	SelectDialog dlg(parent, choices, choicesDescrip, &startingFilter);
-	if (dlg.exec() != QDialog::Accepted)
+	Selector select(parent, choices, choicesDescrip, &startingFilter);
+	
+	if (!select.display())
 		return false;
-	selectedChoice = dlg.mSelectedChoice;
+	selectedChoice = select.mSelectedChoice;
 	return true;
 }
 
-bool SelectDialog::selectNoFilter(QWidget* parent, QList<QStringList> choices,
+bool Selector::selectNoFilter(QWidget* parent, QList<QStringList> choices,
 						QString choicesDescrip, QString& selectedChoice)
 {
 	selectedChoice = "";
 
-	SelectDialog dlg(parent, choices, choicesDescrip, NULL);
-	if (dlg.exec() != QDialog::Accepted)
+	Selector select(parent, choices, choicesDescrip, NULL);
+	
+	if (!select.display())
 		return false;
-	selectedChoice = dlg.mSelectedChoice;
+	selectedChoice = select.mSelectedChoice;
 	return true;
 }
 
-SelectDialog::SelectDialog(QWidget* parent, QList<QStringList> choices,
-						QString choicesDescrip, QString* startingFilter)
-						: QDialog(parent)
+Selector::Selector(QWidget* parent, QList<QStringList> choices,
+				QString choicesDescrip, QString* startingFilter)
 {
+	fgActiveDialog = this;
 	mChoices = choices;
 	if (startingFilter)
 	{
@@ -74,38 +78,47 @@ SelectDialog::SelectDialog(QWidget* parent, QList<QStringList> choices,
 	else
 		mShouldFilter = false;
 
-	setModal(true);
-	setWindowTitle("Select " + choicesDescrip);
-	setMinimumHeight(800);
 
-	mSignalMapper = new QSignalMapper(this);
+	mFrame = new QFrame();
+	mSignalMapper = new QSignalMapper();
 	connect(mSignalMapper, SIGNAL(mapped(const QString&)), this,
 			SLOT(selectChoice(const QString&)));
 
-	QScrollArea* scroll = new QScrollArea;
+	scroll = new SelectFrame(parent, this);
+	scroll->setAttribute(Qt::WA_Maemo5StackedWindow);
+	scroll->setWindowFlags(mFrame->windowFlags() | Qt::Window);
+	scroll->setWindowTitle("Select " + choicesDescrip);
 	scroll->setFrameShape(QFrame::NoFrame);
 	scroll->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding,
 									QSizePolicy::Preferred));
 
-	mFrame = new QFrame();
 	mFrame->setStyleSheet("QPushButton{"
 						"padding: 12px; "
 						"margin: 0px; "
 						"min-width: 65px;"
 						"}");
 	setChoices();
-	QHBoxLayout* layout = new QHBoxLayout;
 	scroll->setWidget(mFrame);
-	layout->addWidget(scroll);
+	scroll->show();
 
-	setContentsMargins(0, 0, 0, 0);
-	setLayout(layout);
 	filterChoices();
 }
 
-void SelectDialog::setChoices()
+Selector::~Selector()
 {
-	mLayout = new SelectLayout(this);
+	fgActiveDialog = NULL;
+}
+
+bool Selector::display()
+{
+    mEventLoop = new QEventLoop;
+    mEventLoop->exec(QEventLoop::AllEvents);
+	return mSelectedChoice != "";
+}
+
+void Selector::setChoices()
+{
+	mLayout = new SelectLayout(mFrame);
 	mLayout->setSpacing(0);
 
 	for (int i = 0; i < mChoices.count(); i++)
@@ -113,7 +126,7 @@ void SelectDialog::setChoices()
 	mFrame->setLayout(mLayout);
 }
 
-void SelectDialog::appendChoices(QStringList choices,
+void Selector::appendChoices(QStringList choices,
 								SelectLayout* parentLayout)
 {
 	for (int i = 0; i < choices.count(); i++)
@@ -126,7 +139,7 @@ void SelectDialog::appendChoices(QStringList choices,
 	}
 	parentLayout->addBreak();
 }
-void SelectDialog::filterChoices()
+void Selector::filterChoices()
 {
 	if (!mShouldFilter)
 		return;
@@ -145,31 +158,49 @@ void SelectDialog::filterChoices()
 			mButtons[i]->hide();
 	}
 	if (matched == 1)
-	{
-		mSelectedChoice = lastMatch;
-		accept();
-	}
+		selectChoice(lastMatch);
 }
 
-void SelectDialog::keyPressEvent(QKeyEvent* event)
+bool Selector::onKey(int key, QString text)
 {
-	if (event->key() >= Qt::Key_A && event->key() <= Qt::Key_Z)
-		mFilterText.append(event->text());
-	else if (event->key() == Qt::Key_Backspace)
+	if (key >= Qt::Key_A && key <= Qt::Key_Z)
+		mFilterText.append(text);
+	else if (key == Qt::Key_Backspace)
 		mFilterText = mFilterText.left(mFilterText.length() - 1);
 	else
-	{
-		QDialog::keyPressEvent(event);
-		return;
-	}
+		return false;
+
 	filterChoices();
+	return true;
 }
 
-void SelectDialog::selectChoice(const QString& choice)
+void Selector::close()
+{
+	mEventLoop->exit();
+}
+
+void Selector::selectChoice(const QString& choice)
 {
 	mSelectedChoice = choice;
-	accept();
+	scroll->close();
 }
+
+SelectFrame::SelectFrame(QWidget* parent, Selector* selector) : QScrollArea(parent)
+{
+	mSelector = selector;
+}
+
+void SelectFrame::keyPressEvent(QKeyEvent* event)
+{
+	if (!mSelector->onKey(event->key(), event->text()))
+		QScrollArea::keyPressEvent(event);
+}
+
+void SelectFrame::closeEvent(QCloseEvent*)
+{
+	mSelector->close();
+}
+
 SelectLayout::SelectLayout(QWidget* parent) : QLayout(parent)
 {
 	setContentsMargins(0, 0, 0, 0);
@@ -311,8 +342,8 @@ bool selectVerse(QWidget* parent, BibleInfo* bible,
 	choices.push_back(bible->getNTBookNames());
 
 	QString selectedChoice;
-	if (!SelectDialog::select(parent, choices, "Book",
-							startingFilter, selectedChoice))
+	if (!Selector::select(parent, choices, "Book",
+						startingFilter, selectedChoice))
 	{
 		return false;
 	}
@@ -324,7 +355,7 @@ bool selectVerse(QWidget* parent, BibleInfo* bible,
 	for (int i = 0; i < bible->getNumChapters(selectedBookNum); i++)
 		subChoices.push_back(QString("%1").arg(i + 1));
 	choices.push_back(subChoices);
-	if (!SelectDialog::selectNoFilter(parent, choices,
+	if (!Selector::selectNoFilter(parent, choices,
 									"Chapter", selectedChoice))
 	{
 		return false;
@@ -342,11 +373,17 @@ bool selectTranslation(QWidget* parent, QString& translation)
 	choices.push_back(getAvailableTranslations());
 
 	QString selectedChoice;
-	if (!SelectDialog::select(parent, choices, "Translation", "", selectedChoice))
+	if (!Selector::select(parent, choices, "Translation", "", selectedChoice))
 		return false;
 
 	translation = selectedChoice;
 	return true;
 }
 
+bool onDialogKey(int key, QString text)
+{
+	if (fgActiveDialog)
+		fgActiveDialog->onKey(key, text);
+	return fgActiveDialog != NULL;
+}
 
