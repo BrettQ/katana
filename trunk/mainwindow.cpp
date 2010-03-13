@@ -23,6 +23,7 @@ MainWindow::MainWindow() : QMainWindow(NULL)
 {
 	mShowShortTitle = false;
 
+	setAttribute(Qt::WA_Maemo5StackedWindow);
 	createMenu();
 
 	QSettings settings;

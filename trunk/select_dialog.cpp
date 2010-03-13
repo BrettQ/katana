@@ -295,7 +295,7 @@ int SelectLayout::doLayout(const QRect& rect, bool testOnly) const
 		if (i && mBreakBeforeList.value(i-1))
 		{
 			x = rect.x();
-			y += lineHeight;
+			y += lineHeight + 20;
 			lineHeight = 0;
 		}
 		QLayoutItem* item = mItemList[i];
