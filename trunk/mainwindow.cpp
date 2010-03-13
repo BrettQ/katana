@@ -19,14 +19,11 @@
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
 
-MainWindow::MainWindow() : QMainWindow()
+MainWindow::MainWindow() : QMainWindow(NULL)
 {
-	mSelectVerseAction = NULL;
-	mSelectTransAction = NULL;
-	mSearchAction = NULL;
 	mShowShortTitle = false;
 
-	setWindowTitle("Katana");
+	createMenu();
 
 	QSettings settings;
 	QString translation = settings.value("initial/translation",
@@ -52,8 +49,6 @@ MainWindow::MainWindow() : QMainWindow()
 	connect(mSearchResults, SIGNAL(resultSelected(const QString&)), this,
 			SLOT(goToVerse(const QString&)));
 
-	createActions();
-	createMenu();
 	QDBusConnection::systemBus().connect(QString(),
 										MCE_SIGNAL_PATH,
 										MCE_SIGNAL_IF,
@@ -72,6 +67,7 @@ MainWindow::MainWindow() : QMainWindow()
 					PropModeReplace,
 					(unsigned char *)&val,
 					1);
+	setWindowTitle("Katana");
 }
 
 MainWindow::~MainWindow()
@@ -89,23 +85,11 @@ void MainWindow::closeEvent(QCloseEvent* event)
 	event->accept();
 }
 
-void MainWindow::createActions()
-{
-	mSelectVerseAction = new QAction("Go to Verse", this);
-	connect(mSelectVerseAction, SIGNAL(triggered()), this, SLOT(onSelectVerse()));
-
-	mSelectTransAction = new QAction("Select Translation", this);
-	connect(mSelectTransAction, SIGNAL(triggered()), this, SLOT(selectTranslation()));
-
-	mSearchAction = new QAction("Search", this);
-	connect(mSearchAction, SIGNAL(triggered()), this, SLOT(search()));
-}
-
 void MainWindow::createMenu()
 {
-	menuBar()->addAction(mSelectVerseAction);
-	menuBar()->addAction(mSelectTransAction);
-	menuBar()->addAction(mSearchAction);
+	menuBar()->addAction("Go to Verse", this, SLOT(onSelectVerse()));
+	menuBar()->addAction("Select Translation", this, SLOT(selectTranslation()));
+	menuBar()->addAction("Search", this, SLOT(search()));
 }
 
 void MainWindow::replaceViewer(InfiniteScrollViewer* viewer)

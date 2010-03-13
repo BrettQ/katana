@@ -21,7 +21,6 @@ public:
 protected:
 	virtual void closeEvent(QCloseEvent* event);
 
-	void createActions();
 	void createMenu();
 
 	void replaceViewer(InfiniteScrollViewer* viewer);
@@ -48,12 +47,9 @@ private:
 	bool mShowShortTitle;
 	QHBoxLayout* mLayout;
 	SearchResultsFrame* mSearchResults;
-	QAction* mSelectVerseAction;
-	QAction* mSelectTransAction;
 
 	// Searching
 	QString mCurrentSearchText;
-	QAction* mSearchAction;
 };
 
 
