@@ -1,9 +1,10 @@
+TEMPLATE = app
 HEADERS = mainwindow.h infinite_scroll.h bible_text_source.h search_dialog.h \
 		search_results.h select_dialog.h
 SOURCES = main.cpp mainwindow.cpp infinite_scroll.cpp bible_text_source.cpp \
 		search_dialog.cpp search_results.cpp select_dialog.cpp
-CONFIG += qt
-LIBS += -lsword -lQtMaemo5
+QT += maemo5
+LIBS += -lsword 
 INCLUDEPATH += /usr/include/sword
 
 unix {
