@@ -145,10 +145,10 @@ void Selector::filterChoices()
 		return;
 	int matched = 0;
 	QString lastMatch;
+	QRegExp re("\\b" + mFilterText + ".*", Qt::CaseInsensitive);
 	for (int i = 0; i < mButtons.size(); i++)
 	{
-		if (mFilterText.length() == 0 ||
-			mButtons[i]->text().contains(mFilterText, Qt::CaseInsensitive))
+		if (mFilterText.length() == 0 || re.indexIn(mButtons[i]->text()) != -1)
 		{
 			matched++;
 			mButtons[i]->show();
