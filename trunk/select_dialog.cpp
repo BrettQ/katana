@@ -285,36 +285,77 @@ QLayoutItem* SelectLayout::takeAt(int index)
 
 int SelectLayout::doLayout(const QRect& rect, bool testOnly) const
 {
-	int x = rect.x();
+	assert(mItemList.size() == mBreakBeforeList.size());
 	int y = rect.y();
 
-	assert(mItemList.size() == mBreakBeforeList.size());
-	int lineHeight = 0;
-	for (int i = 0; i < mItemList.size(); i++)
+	int curItem = 0;
+	while (curItem < mItemList.size())
 	{
-		if (i && mBreakBeforeList.value(i-1))
+		int x = rect.x();
+		QList<QLayoutItem*> rowItems;
+		QList<QRect> itemPositions;
+		int rowHeight = 0;
+
+		// Make a first pass to collect all buttons that will fit on this row.
+		for (int i = curItem; curItem < mItemList.size(); curItem++)
 		{
-			x = rect.x();
-			y += lineHeight + 20;
-			lineHeight = 0;
+			QLayoutItem* item = mItemList[curItem];
+			int nextX = x + item->sizeHint().width();
+			if (nextX > rect.right() && rowHeight > 0)
+				break;
+
+			itemPositions.push_back(QRect(QPoint(x, y), item->sizeHint()));
+			rowItems.push_back(mItemList[curItem]);
+			rowHeight = qMax(rowHeight, item->sizeHint().height());
+			x = nextX;
+
+			if (mBreakBeforeList.value(curItem))
+			{
+				curItem++;
+				break;
+			}
 		}
-		QLayoutItem* item = mItemList[i];
-		int nextX = x + item->sizeHint().width();
-		if (nextX > rect.right() && lineHeight > 0)
-		{
-			x = rect.x();
-			y = y + lineHeight;
-			nextX = x + item->sizeHint().width();
-			lineHeight = 0;
-		}
+
+		bool isEOL = curItem >= mItemList.size() - 1 ||
+					mBreakBeforeList.value(curItem - 1);
 		if (!testOnly)
-			item->setGeometry(QRect(QPoint(x, y), item->sizeHint()));
+		{
+			// Now adjust the widths to make full use of the line width.
+			int buttonsWidth = x - rect.x();
+			int availWidth = rect.width();
+			if (availWidth - buttonsWidth > rowItems.size() && !isEOL)
+			{
+				// Adjust all but the last width (it will be adjusted below.)
+				double dScaleFactor = double(availWidth) /
+									double(buttonsWidth);
+				int adjX = rect.x();
+				for (int i = 0; i < rowItems.size(); i++)
+				{
+					int adjWidth = double(itemPositions[i].width()) *
+									dScaleFactor;
+					itemPositions[i].setLeft(adjX);
+					itemPositions[i].setWidth(adjWidth);
 
-		x = nextX;
-		lineHeight = qMax(lineHeight, item->sizeHint().height());
+					adjX += adjWidth;
+				}
+			}
+			int adjX = rect.x();
+			for (int i = 0; i < rowItems.size(); i++)
+			{
+				if (i == rowItems.size() - 1 && !isEOL)
+					itemPositions[i].setWidth(availWidth - adjX);
+				rowItems[i]->setGeometry(itemPositions[i]);
+				adjX += itemPositions[i].width();
+			}
+		}
+
+		// Reset row variables
+		y += rowHeight;
+
+		if (curItem && mBreakBeforeList.value(curItem - 1))
+			y += 20;
 	}
-
-	return y + lineHeight - rect.y();
+	return y + rect.y();
 }
 int SelectLayout::smartSpacing(QStyle::PixelMetric pm) const
 {
