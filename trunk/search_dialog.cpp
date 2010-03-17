@@ -6,7 +6,7 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 
-SearchDialog::SearchDialog(QWidget* parent) : QDialog(parent)
+SearchDialog::SearchDialog(QWidget* parent, QString startingText) : QDialog(parent)
 {
 	setWindowTitle("Search");
 
@@ -20,6 +20,7 @@ SearchDialog::SearchDialog(QWidget* parent) : QDialog(parent)
 	QVBoxLayout* layout = new QVBoxLayout;
 
 	mSearchEdit = new QLineEdit();
+	mSearchEdit->setText(startingText);
 	layout->addWidget(mSearchEdit);
 
 	QHBoxLayout* buttonLayout = new QHBoxLayout;

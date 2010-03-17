@@ -90,7 +90,7 @@ void MainWindow::createMenu()
 {
 	menuBar()->addAction("Go to Verse", this, SLOT(onSelectVerse()));
 	menuBar()->addAction("Select Translation", this, SLOT(selectTranslation()));
-	menuBar()->addAction("Search", this, SLOT(search()));
+	menuBar()->addAction("Search", this, SLOT(onSearch()));
 }
 
 void MainWindow::replaceViewer(InfiniteScrollViewer* viewer)
@@ -158,18 +158,45 @@ void MainWindow::onSelectVerse()
 
 void MainWindow::selectVerse(QString startingFilter)
 {
-	QString bookName;
-	int chapter = 0;
-	if (::selectVerse(this, mBible, startingFilter, bookName, chapter))
+	SelectResult result;
+	if (::selectVerse(this, mBible, startingFilter, result))
 	{
-		TextSource* bibleSource = getBibleTextSource(mBible, bookName);
-		InfiniteScrollViewer* viewer = \
-			new InfiniteScrollViewer(this, bibleSource,
-									chapter, 0, "", mShowShortTitle);
+		switch (result.getType())
+		{
+		case SelectResult::Type_SearchText:
+			search(result.search_GetText(), "");
+			break;
+		case SelectResult::Type_SearchDialog:
+			startSearch(result.search_GetText());
+			break;
+		case SelectResult::Type_SelectedVerse:
+			TextSource* bibleSource = getBibleTextSource(mBible,
+													result.verse_GetBook());
+			InfiniteScrollViewer* viewer = \
+				new InfiniteScrollViewer(this, bibleSource,
+										result.verse_GetChapter(), 0,
+										"", mShowShortTitle);
 
-		replaceViewer(viewer);
-		mSearchResults->hideResults();
+			replaceViewer(viewer);
+			mSearchResults->hideResults();
+			break;
+		}
 	}
+}
+
+void MainWindow::search(QString text, QString scope)
+{
+	QProgressDialog progress("Searching...", QString(), 0, 100, this);
+	mCurrentSearchText = text;
+	QList<Key> results = mBible->search(text, scope, &progress);
+	mSearchResults->handleResults(results);
+}
+
+void MainWindow::startSearch(QString text)
+{
+	SearchDialog dlg(this, text);
+	if (dlg.exec() == QDialog::Accepted)
+		search(dlg.getSearchText(), dlg.getSearchScope());
 }
 
 void MainWindow::selectTranslation()
@@ -192,18 +219,11 @@ void MainWindow::selectTranslation()
 	}
 }
 
-void MainWindow::search()
+void MainWindow::onSearch()
 {
-	SearchDialog dlg(this);
+	SearchDialog dlg(this, "");
 	if (dlg.exec() == QDialog::Accepted)
-	{
-		QProgressDialog progress("Searching...", QString(), 0, 100, this);
-		QString searchText = dlg.getSearchText();
-		mCurrentSearchText = searchText;
-		QList<Key> results = mBible->search(searchText, dlg.getSearchScope(),
-											&progress);
-		mSearchResults->handleResults(results);
-	}
+		search(dlg.getSearchText(), dlg.getSearchScope());
 }
 
 void MainWindow::goToVerse(QString verse)

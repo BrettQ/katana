@@ -39,16 +39,25 @@ private:
 };
 
 bool Selector::select(QWidget* parent, QList<QStringList> choices,
-						QString choicesDescrip, QString startingFilter,
-						QString& selectedChoice)
+					QString choicesDescrip, QString startingFilter,
+					QString& searchText,
+					bool& searchImmediately,
+					QString& selectedChoice)
 {
+	searchText = "";
 	selectedChoice = "";
 
 	Selector select(parent, choices, choicesDescrip, &startingFilter);
 	
 	if (!select.display())
 		return false;
-	selectedChoice = select.mSelectedChoice;
+	if (select.mSearchText != "")
+	{
+		searchText = select.mSearchText;
+		searchImmediately = select.mSearchImmediately;
+	}
+	else
+		selectedChoice = select.mSelectedChoice;
 	return true;
 }
 
@@ -70,6 +79,7 @@ Selector::Selector(QWidget* parent, QList<QStringList> choices,
 {
 	fgActiveDialog = this;
 	mChoices = choices;
+	mSearchImmediately = false;
 	if (startingFilter)
 	{
 		mFilterText = *startingFilter;
@@ -96,8 +106,30 @@ Selector::Selector(QWidget* parent, QList<QStringList> choices,
 						"padding: 12px; "
 						"margin: 0px; "
 						"min-width: 65px;"
+						"}"
+						"QPushButton#Search{"
+						"margin: 6px;"
+						"padding: 13px;"
+						"width: 150px;"
+						"}"
+						"QLabel{"
+						"margin: 20px;"
+						"}"
+						"QLineEdit{"
+						"width: 400px;"
 						"}");
 	setChoices();
+	if (mShouldFilter)
+	{
+		mSearchEdit = new SearchEdit(mFrame, this);
+		mSearchEdit->setText(mFilterText);
+		mLayout->addBreak();
+		mLayout->addWidget(mSearchEdit);
+		mSearchButton = new QPushButton("Search");
+		mSearchButton->setObjectName("Search");
+		connect(mSearchButton, SIGNAL(clicked()), this, SLOT(searchClicked()));
+		mLayout->addWidget(mSearchButton);
+	}
 	scroll->setWidget(mFrame);
 	scroll->show();
 
@@ -113,7 +145,7 @@ bool Selector::display()
 {
     mEventLoop = new QEventLoop;
     mEventLoop->exec(QEventLoop::AllEvents);
-	return mSelectedChoice != "";
+	return mSelectedChoice != "" || mSearchText != "";
 }
 
 void Selector::setChoices()
@@ -127,7 +159,7 @@ void Selector::setChoices()
 }
 
 void Selector::appendChoices(QStringList choices,
-								SelectLayout* parentLayout)
+							SelectLayout* parentLayout)
 {
 	for (int i = 0; i < choices.count(); i++)
 	{
@@ -171,6 +203,8 @@ bool Selector::onKey(int key, QString text)
 		return false;
 
 	filterChoices();
+	mSearchEdit->setText(mFilterText);
+	mSearchEdit->setCursorPosition(mFilterText.length());
 	return true;
 }
 
@@ -185,20 +219,18 @@ void Selector::selectChoice(const QString& choice)
 	scroll->close();
 }
 
-SelectFrame::SelectFrame(QWidget* parent, Selector* selector) : QScrollArea(parent)
+void Selector::searchClicked()
 {
-	mSelector = selector;
+	mSearchText = mSearchEdit->text();
+	mSearchImmediately = true;
+	scroll->close();
 }
 
-void SelectFrame::keyPressEvent(QKeyEvent* event)
+void Selector::searchEditClicked()
 {
-	if (!mSelector->onKey(event->key(), event->text()))
-		QScrollArea::keyPressEvent(event);
-}
-
-void SelectFrame::closeEvent(QCloseEvent*)
-{
-	mSelector->close();
+	mSearchText = mSearchEdit->text();
+	mSearchImmediately = false;
+	scroll->close();
 }
 
 SelectLayout::SelectLayout(QWidget* parent) : QLayout(parent)
@@ -297,7 +329,7 @@ int SelectLayout::doLayout(const QRect& rect, bool testOnly) const
 		int rowHeight = 0;
 
 		// Make a first pass to collect all buttons that will fit on this row.
-		for (int i = curItem; curItem < mItemList.size(); curItem++)
+		for (; curItem < mItemList.size(); curItem++)
 		{
 			QLayoutItem* item = mItemList[curItem];
 			int nextX = x + item->sizeHint().width();
@@ -373,21 +405,106 @@ int SelectLayout::smartSpacing(QStyle::PixelMetric pm) const
 	return 0;
 }
 
+SelectResult SelectResult::search(QString text, bool searchImmediately)
+{
+	SelectResult result;
+	if (searchImmediately)
+		result.mType = Type_SearchText;
+	else
+		result.mType = Type_SearchDialog;
+	result.mSearchText = text;
+	return result;
+}
+
+SearchEdit::SearchEdit(QWidget* parent, Selector* selector) : QLineEdit(parent)
+{
+	mSelector = selector;
+}
+
+void SearchEdit::focusInEvent(QFocusEvent* event)
+{
+	if (event->reason() == Qt::MouseFocusReason)
+		QTimer::singleShot(10, this, SLOT(onClick()));
+	else
+		clearFocus();
+}
+
+void SearchEdit::onClick()
+{
+	mSelector->searchEditClicked();
+}
+
+SelectFrame::SelectFrame(QWidget* parent, Selector* selector) : QScrollArea(parent)
+{
+	mSelector = selector;
+}
+
+void SelectFrame::keyPressEvent(QKeyEvent* event)
+{
+	if (!mSelector->onKey(event->key(), event->text()))
+		QScrollArea::keyPressEvent(event);
+}
+
+void SelectFrame::closeEvent(QCloseEvent*)
+{
+	mSelector->close();
+}
+
+SelectResult SelectResult::verse(QString bookName, int chapter)
+{
+	SelectResult result;
+	result.mType = Type_SelectedVerse;
+	result.mBookName = bookName;
+	result.mChapter = chapter;
+	return result;
+}
+
+SelectResult::Type SelectResult::getType() const
+{
+	return mType;
+}
+
+QString SelectResult::search_GetText() const
+{
+	assert(mType == Type_SearchText || mType == Type_SearchDialog);
+	return mSearchText;
+}
+
+QString SelectResult::verse_GetBook() const
+{
+	assert(mType == Type_SelectedVerse);
+	return mBookName;
+}
+
+int SelectResult::verse_GetChapter() const
+{
+	assert(mType == Type_SelectedVerse);
+	return mChapter;
+}
 
 bool selectVerse(QWidget* parent, BibleInfo* bible,
 				QString startingFilter,
-				QString& bookName, int& chapter)
+				SelectResult& result)
 {
 	QList<QStringList> choices;
 	choices.push_back(bible->getOTBookNames());
 	choices.push_back(bible->getNTBookNames());
 
+	QString searchText;
+	bool searchImmediately = false;
 	QString selectedChoice;
 	if (!Selector::select(parent, choices, "Book",
-						startingFilter, selectedChoice))
+						startingFilter, searchText,
+						searchImmediately, selectedChoice))
 	{
 		return false;
 	}
+	if (searchText != "")
+	{
+		result = SelectResult::search(searchText, searchImmediately);
+		return true;
+	}
+
 	QString selectedBook = selectedChoice;
 	int selectedBookNum = bible->getBookNum(selectedBook);
 
@@ -397,14 +514,13 @@ bool selectVerse(QWidget* parent, BibleInfo* bible,
 		subChoices.push_back(QString("%1").arg(i + 1));
 	choices.push_back(subChoices);
 	if (!Selector::selectNoFilter(parent, choices,
-									"Chapter", selectedChoice))
+								"Chapter", selectedChoice))
 	{
 		return false;
 	}
 	int selectedChapter = selectedChoice.toInt() - 1;
 
-	bookName = selectedBook;
-	chapter = selectedChapter;
+	result = SelectResult::verse(selectedBook, selectedChapter);
 	return true;
 };
 
@@ -414,8 +530,11 @@ bool selectTranslation(QWidget* parent, QString& translation)
 	choices.push_back(getAvailableTranslations());
 
 	QString selectedChoice;
-	if (!Selector::select(parent, choices, "Translation", "", selectedChoice))
+	if (!Selector::selectNoFilter(parent, choices, "Translation",
+								selectedChoice))
+	{
 		return false;
+	}
 
 	translation = selectedChoice;
 	return true;

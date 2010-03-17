@@ -8,7 +8,7 @@ class SearchDialog : public QDialog
 {
 	Q_OBJECT
 public:
-	SearchDialog(QWidget* pParent);
+	SearchDialog(QWidget* pParent, QString startingText);
 
 	QString getSearchText() const { return mSearchText; }
 	QString getSearchScope() const { return mSearchScope; }

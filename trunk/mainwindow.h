@@ -32,11 +32,13 @@ protected:
 
 	virtual void keyPressEvent(QKeyEvent* event);
 	void selectVerse(QString startingFilter);
+	void search(QString text, QString scope);
+	void startSearch(QString text);
 
 protected slots:
 	void onSelectVerse();
 	void selectTranslation();
-	void search();
+	void onSearch();
 	void goToVerse(QString verse);
 	void orientationChanged(const QString& newOrientation);
 
