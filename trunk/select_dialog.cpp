@@ -130,6 +130,8 @@ Selector::Selector(QWidget* parent, QList<QStringList> choices,
 		connect(mSearchButton, SIGNAL(clicked()), this, SLOT(searchClicked()));
 		mLayout->addWidget(mSearchButton);
 	}
+	else
+		mSearchEdit = NULL;
 	scroll->setWidget(mFrame);
 	scroll->show();
 
@@ -203,8 +205,11 @@ bool Selector::onKey(int key, QString text)
 		return false;
 
 	filterChoices();
-	mSearchEdit->setText(mFilterText);
-	mSearchEdit->setCursorPosition(mFilterText.length());
+	if (mSearchEdit)
+	{
+		mSearchEdit->setText(mFilterText);
+		mSearchEdit->setCursorPosition(mFilterText.length());
+	}
 	return true;
 }
 
