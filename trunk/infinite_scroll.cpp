@@ -226,7 +226,7 @@ void InfiniteScrollViewer::initialScroll()
 void InfiniteScrollViewer::insertParagraph(QTextCursor& cursor, int section, int paragraph)
 {
 	QString text = mTextSource->getText(section, paragraph);
-	QString html = QString("<span>&nbsp;&nbsp;<a name=\"%1_%2\">%3</a> %4</span>").arg(
+	QString html = QString("<span>&nbsp;&nbsp;&nbsp;<a name=\"%1_%2\">%3</a> %4</span>").arg(
 							section).arg(paragraph).arg(paragraph + 1).arg(text);
 	cursor.insertHtml(html);
 }
