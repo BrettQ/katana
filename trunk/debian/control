@@ -10,7 +10,9 @@ Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, libqt4-maemo5-core,
  libqt4-maemo5-gui, libqt4-maemo5-maemo5, sword16
 Description: A simple Bible reader
- A simple Bible reader based on sword.
+ Katana is a simple Bible reader based on sword.
+ Bibles are finger-scollable and searchable.
+XSBC-Bugtracker: https://garage.maemo.org/tracker/?atid=4056&group_id=1084
 XB-Maemo-Icon-26:
  iVBORw0KGgoAAAANSUhEUgAAACgAAAAwCAYAAABjezibAAAABHNCSVQICAgIfAhkiAAAAAlwSFlz
  AAAMUAAADFABkurQFwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAAQdEVY
