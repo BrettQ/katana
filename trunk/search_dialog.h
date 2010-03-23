@@ -1,5 +1,4 @@
 #include <QDialog>
-#include <QFrame>
 #include <QMap>
 
 class QLineEdit;

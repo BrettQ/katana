@@ -51,12 +51,14 @@ void SearchResultsHighlighter::highlightBlock(const QString& text)
 }
 InfiniteScrollViewer::InfiniteScrollViewer(QWidget* mainWindow,
 										TextSource* textSource,
+										bool newLineForParagraphs,
 										int startingSection,
 										int startingParagraph,
 										QString searchText,
 										bool shortTitle) : QTextBrowser(mainWindow)
 {
 	mTextSource = textSource;
+	mNewLineForParagraphs = newLineForParagraphs;
 	mDocument = new QTextDocument();
 	mMainWindow = mainWindow;
 
@@ -223,11 +225,18 @@ void InfiniteScrollViewer::initialScroll()
 	scrollTo(mCurrentSection, mCurrentParagraph);
 }
 
-void InfiniteScrollViewer::insertParagraph(QTextCursor& cursor, int section, int paragraph)
+void InfiniteScrollViewer::insertParagraph(QTextCursor& cursor, int section,
+										int paragraph)
 {
 	QString text = mTextSource->getText(section, paragraph);
-	QString html = QString("<span>&nbsp;&nbsp;&nbsp;<a name=\"%1_%2\">%3</a> %4</span>").arg(
-							section).arg(paragraph).arg(paragraph + 1).arg(text);
+	QString spacing;
+	if (!mNewLineForParagraphs)
+		spacing = "&nbsp;&nbsp;&nbsp;";
+	QString html = QString("<span>%1<a name=\"%2_%3\">%4</a> %5</span>").arg(
+							spacing).arg(section).arg(paragraph
+							).arg(paragraph + 1).arg(text);
+	if (mNewLineForParagraphs)
+		startBlock(cursor);
 	cursor.insertHtml(html);
 }
 

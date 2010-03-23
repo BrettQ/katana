@@ -39,6 +39,7 @@ protected slots:
 	void onSelectVerse();
 	void selectTranslation();
 	void onSearch();
+	void onSettings();
 	void goToVerse(QString verse);
 	void orientationChanged(const QString& newOrientation);
 

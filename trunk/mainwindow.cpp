@@ -3,8 +3,9 @@
 #include "bible_text_source.h"
 #include "infinite_scroll.h"
 #include "search_dialog.h"
-#include "select_dialog.h"
 #include "search_results.h"
+#include "select_dialog.h"
+#include "settings_dialog.h"
 
 #include <iostream>
 #include <mce/mode-names.h>
@@ -37,8 +38,9 @@ MainWindow::MainWindow() : QMainWindow(NULL)
 
 	QFrame* frame = new QFrame;
 	mLayout = new QHBoxLayout;
-	mpViewer = new InfiniteScrollViewer(this, bibleSource, chapter,
-										verse, "", mShowShortTitle);
+    mpViewer = new InfiniteScrollViewer(this, bibleSource,
+									useNewLineForVerses(), 
+									chapter, verse, "", mShowShortTitle);
 	mLayout->addWidget(mpViewer);
 	mSearchResults = new SearchResultsFrame();
 	mLayout->addWidget(mSearchResults);
@@ -91,6 +93,7 @@ void MainWindow::createMenu()
 	menuBar()->addAction("Go to Verse", this, SLOT(onSelectVerse()));
 	menuBar()->addAction("Select Translation", this, SLOT(selectTranslation()));
 	menuBar()->addAction("Search", this, SLOT(onSearch()));
+	menuBar()->addAction("Settings", this, SLOT(onSettings()));
 }
 
 void MainWindow::replaceViewer(InfiniteScrollViewer* viewer)
@@ -174,6 +177,7 @@ void MainWindow::selectVerse(QString startingFilter)
 													result.verse_GetBook());
 			InfiniteScrollViewer* viewer = \
 				new InfiniteScrollViewer(this, bibleSource,
+										useNewLineForVerses(), 
 										result.verse_GetChapter(), 0,
 										"", mShowShortTitle);
 
@@ -211,8 +215,8 @@ void MainWindow::selectTranslation()
 		mBible = getBibleInfo(translation);
 		TextSource* bibleSource = getBibleTextSource(mBible, bookName);
 		InfiniteScrollViewer* viewer = \
-			new InfiniteScrollViewer(this, bibleSource, chapter,
-									verse, "", mShowShortTitle);
+			new InfiniteScrollViewer(this, bibleSource, useNewLineForVerses(),
+									chapter, verse, "", mShowShortTitle);
 
 		replaceViewer(viewer);
 		mSearchResults->hideResults();
@@ -226,15 +230,34 @@ void MainWindow::onSearch()
 		search(dlg.getSearchText(), dlg.getSearchScope());
 }
 
+void MainWindow::onSettings()
+{
+	SettingsDialog dlg(this);
+	if (dlg.exec() == QDialog::Accepted)
+	{
+		QString bookName = mpViewer->getSourceName();
+		int chapter = mpViewer->getCurrentSection();
+		int verse = mpViewer->getCurrentParagraph();
+
+		TextSource* bibleSource = getBibleTextSource(mBible, bookName);
+		InfiniteScrollViewer* viewer = \
+			new InfiniteScrollViewer(this, bibleSource, useNewLineForVerses(),
+									chapter, verse, "", mShowShortTitle);
+
+		replaceViewer(viewer);
+		mSearchResults->hideResults();
+	}
+		
+}
+
 void MainWindow::goToVerse(QString verse)
 {
 	Key key = mBible->getKeyForString(verse);
 
 	TextSource* bibleSource = getBibleTextSource(mBible, key.mBook);
 	InfiniteScrollViewer* viewer = \
-		new InfiniteScrollViewer(this, bibleSource, key.mChapter,
-								key.mVerse, mCurrentSearchText,
-								mShowShortTitle);
+		new InfiniteScrollViewer(this, bibleSource, useNewLineForVerses(), 
+								key.mChapter, key.mVerse, "", mShowShortTitle);
 
 	replaceViewer(viewer);
 }

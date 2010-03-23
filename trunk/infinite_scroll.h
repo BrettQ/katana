@@ -39,6 +39,7 @@ class InfiniteScrollViewer : public QTextBrowser
 	Q_OBJECT
 public:
 	InfiniteScrollViewer(QWidget* mainWindow, TextSource* textSource,
+						bool newLineForParagraphs,
 						int startingSection, int startingParagraph,
 						QString searchText, bool shortTitle);
 	~InfiniteScrollViewer();
@@ -89,6 +90,7 @@ private:
 	QWidget* mMainWindow;
 	QSyntaxHighlighter* mHighlighter;
 
+	bool mNewLineForParagraphs;
 	bool mShowShortTitle;
 
 	int mFirstSection;
