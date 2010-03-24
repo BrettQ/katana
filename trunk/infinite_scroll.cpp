@@ -21,17 +21,17 @@ QString defaultCss = "\
 a\
 {\
 	text-decoration: none;\
-	font-size: 14pt;\
+	font-size: %2pt;\
 	color: #888;\
 }\
 span\
 {\
 	font-family: sans-serif;\
-	font-size: 16pt;\
+	font-size: %1pt;\
 }\
 .SectionTitle\
 {\
-	font-size: 28pt;\
+	font-size: %3pt;\
 	font-weight: bold;\
 }\
 ";
@@ -52,6 +52,7 @@ void SearchResultsHighlighter::highlightBlock(const QString& text)
 InfiniteScrollViewer::InfiniteScrollViewer(QWidget* mainWindow,
 										TextSource* textSource,
 										bool newLineForParagraphs,
+										int fontSize,
 										int startingSection,
 										int startingParagraph,
 										QString searchText,
@@ -83,7 +84,10 @@ InfiniteScrollViewer::InfiniteScrollViewer(QWidget* mainWindow,
 	mLastSection = 0;
 	mLastParagraph = 0;
 
-	mDocument->setDefaultStyleSheet(defaultCss);
+	int verseNumSize = (double)fontSize * 0.875;
+	int sectionSize = (double)fontSize * 1.75;
+	QString css = defaultCss.arg(fontSize).arg(verseNumSize).arg(sectionSize);
+	mDocument->setDefaultStyleSheet(css);
 
 	mCurrentSection = startingSection;
 	mCurrentParagraph = startingParagraph;

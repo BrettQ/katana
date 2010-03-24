@@ -39,7 +39,7 @@ class InfiniteScrollViewer : public QTextBrowser
 	Q_OBJECT
 public:
 	InfiniteScrollViewer(QWidget* mainWindow, TextSource* textSource,
-						bool newLineForParagraphs,
+						bool newLineForParagraphs, int fontSize,
 						int startingSection, int startingParagraph,
 						QString searchText, bool shortTitle);
 	~InfiniteScrollViewer();

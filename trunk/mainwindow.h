@@ -35,6 +35,8 @@ protected:
 	void search(QString text, QString scope);
 	void startSearch(QString text);
 
+	InfiniteScrollViewer* createViewer(QString book, int chapter, int verse);
+
 protected slots:
 	void onSelectVerse();
 	void selectTranslation();
