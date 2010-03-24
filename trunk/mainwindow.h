@@ -36,6 +36,8 @@ protected:
 	void startSearch(QString text);
 
 	InfiniteScrollViewer* createViewer(QString book, int chapter, int verse);
+	InfiniteScrollViewer* createViewerWithHighlight(QString book, int chapter,
+												int verse, QString highlight);
 
 protected slots:
 	void onSelectVerse();

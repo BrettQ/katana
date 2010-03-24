@@ -170,8 +170,8 @@ void MainWindow::selectVerse(QString startingFilter)
 			startSearch(result.search_GetText());
 			break;
 		case SelectResult::Type_SelectedVerse:
-			QString book = mpViewer->getSourceName();
-			replaceViewer(createViewer(book, result.verse_GetChapter(), 0));
+			replaceViewer(createViewer(result.verse_GetBook(),
+									result.verse_GetChapter(), 0));
 			mSearchResults->hideResults();
 			break;
 		}
@@ -197,10 +197,14 @@ InfiniteScrollViewer* MainWindow::createViewer(QString book, int chapter,
 											int verse)
 {
 	TextSource* bibleSource = getBibleTextSource(mBible, book);
+	QString highlight;
+	if (mSearchResults && mSearchResults->isShowingResults())
+		highlight = mCurrentSearchText;
 	return new InfiniteScrollViewer(this, bibleSource,
 									shouldUseNewLineForVerses(),
 									getTextFontSize(),
-									chapter, verse, "", mShowShortTitle);
+									chapter, verse,
+									highlight, mShowShortTitle);
 }
 
 void MainWindow::selectTranslation()

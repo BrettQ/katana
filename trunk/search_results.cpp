@@ -65,6 +65,11 @@ void SearchResultsFrame::handleResults(QList<Key> results)
 	mLayout->addWidget(mScroll);
 }
 
+bool SearchResultsFrame::isShowingResults()
+{
+	return mSearchResultsMapper != NULL;
+}
+
 void SearchResultsFrame::hideResults()
 {
 	mLayout->setContentsMargins(0, 0, 0, 0);

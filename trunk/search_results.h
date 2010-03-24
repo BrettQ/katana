@@ -14,6 +14,7 @@ public:
 	~SearchResultsFrame();
 
 	void handleResults(QList<Key> results);
+	bool isShowingResults();
 	void hideResults();
 
 signals:
