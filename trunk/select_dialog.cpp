@@ -424,19 +424,26 @@ SelectResult SelectResult::search(QString text, bool searchImmediately)
 SearchEdit::SearchEdit(QWidget* parent, Selector* selector) : QLineEdit(parent)
 {
 	mSelector = selector;
-}
-
-void SearchEdit::focusInEvent(QFocusEvent* event)
-{
-	if (event->reason() == Qt::MouseFocusReason)
-		QTimer::singleShot(10, this, SLOT(onClick()));
-	else
-		clearFocus();
+	mFocused = false;
 }
 
 void SearchEdit::onClick()
 {
 	mSelector->searchEditClicked();
+}
+
+void SearchEdit::focusInEvent(QFocusEvent* event)
+{
+	if (event->reason() == Qt::MouseFocusReason)
+		mFocused = true;
+	else
+		clearFocus();
+}
+
+void SearchEdit::mouseReleaseEvent(QMouseEvent* event)
+{
+	if (mFocused)
+		QTimer::singleShot(10, this, SLOT(onClick()));
 }
 
 SelectFrame::SelectFrame(QWidget* parent, Selector* selector) : QScrollArea(parent)

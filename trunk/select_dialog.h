@@ -81,8 +81,10 @@ protected slots:
 
 protected:
 	virtual void focusInEvent(QFocusEvent* event);
+	virtual void mouseReleaseEvent(QMouseEvent* event);
 
 	Selector* mSelector;
+	bool mFocused;
 };
 
 class SelectResult
