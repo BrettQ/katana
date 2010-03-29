@@ -1,3 +1,15 @@
+katana (0.2.2-0) unstable; urgency=low
+
+  * Fix bugs introduced in 0.2.1
+
+ -- Josh Nisly <katana@joshnisly.com>  Wed, 24 Mar 2010 15:09:50 -0500
+
+katana (0.2.1-0) unstable; urgency=low
+
+  Added settings for font size and newlines on verse boundaries.
+
+ -- Josh Nisly <katana@joshnisly.com>  Wed,  24 Mar 2010 10:52:00 -0600
+
 katana (0.2.0-3) unstable; urgency=low
 
   * Build fixes

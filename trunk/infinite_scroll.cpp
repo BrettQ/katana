@@ -136,7 +136,7 @@ void InfiniteScrollViewer::fillInitial(int section, int startingParagraph)
 	int lastParagraph = startingParagraph + 10;
 	if (lastParagraph >= mTextSource->getNumParagraphs(section))
 		lastParagraph = mTextSource->getNumParagraphs(section);
-	for (int i = 0; i < lastParagraph; i++)
+	for (int i = 0; i <= lastParagraph; i++)
 		insertParagraph(cursor, section, i);
 
 	mFirstSection = section;
