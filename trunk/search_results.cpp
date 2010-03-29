@@ -32,6 +32,10 @@ void SearchResultsFrame::handleResults(QList<Key> results)
 	connect(mSearchResultsMapper, SIGNAL(mapped(const QString&)), this,
 			SLOT(onSelect(const QString&)));
 
+	QPushButton* hideButton =
+		new QPushButton(QIcon::fromTheme("general_close"), "");
+	connect(hideButton, SIGNAL(clicked()), this, SLOT(onHideClicked()));
+	mLayout->addWidget(hideButton);
 	QVBoxLayout* buttonsLayout = new QVBoxLayout;
 	buttonsLayout->setSpacing(0);
 	buttonsLayout->setContentsMargins(0, 0, 0, 0);
@@ -58,7 +62,7 @@ void SearchResultsFrame::handleResults(QList<Key> results)
 
 	QFrame* frame = new QFrame();
 	frame->setStyleSheet("QPushButton{"
-						"padding: 3px 10px 3px 10px;"
+						"padding: 7px 10px 7px 10px;"
 						"}");
 	frame->setLayout(buttonsLayout);
 	mScroll->setWidget(frame);
@@ -86,5 +90,10 @@ void SearchResultsFrame::hideResults()
 void SearchResultsFrame::onSelect(const QString& result)
 {
 	emit resultSelected(result);
+}
+
+void SearchResultsFrame::onHideClicked()
+{
+	hideResults();
 }
 

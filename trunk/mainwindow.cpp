@@ -181,6 +181,7 @@ void MainWindow::selectVerse(QString startingFilter)
 void MainWindow::search(QString text, QString scope)
 {
 	QProgressDialog progress("Searching...", QString(), 0, 100, this);
+	progress.setWindowTitle("Searching...");
 	mCurrentSearchText = text;
 	QList<Key> results = mBible->search(text, scope, &progress);
 	mSearchResults->handleResults(results);

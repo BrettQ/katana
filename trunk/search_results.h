@@ -22,6 +22,7 @@ signals:
 
 protected slots:
 	void onSelect(const QString& result);
+	void onHideClicked();
 
 protected:
 	QVBoxLayout* mLayout;
