@@ -91,6 +91,7 @@ InfiniteScrollViewer::InfiniteScrollViewer(QWidget* mainWindow,
 
 	mCurrentSection = startingSection;
 	mCurrentParagraph = startingParagraph;
+	mHasDoneInitialFill = false;
 }
 
 InfiniteScrollViewer::~InfiniteScrollViewer()
@@ -143,6 +144,7 @@ void InfiniteScrollViewer::fillInitial(int section, int startingParagraph)
 	mFirstParagraph = 0;
 	mLastSection = section;
 	mLastParagraph = lastParagraph;
+	mHasDoneInitialFill = true;
 
 	fillBottomText();
 
@@ -226,6 +228,9 @@ bool InfiniteScrollViewer::filledToEnd()
 
 void InfiniteScrollViewer::initialScroll()
 {
+	if (!mHasDoneInitialFill)
+		return;
+	fillBottomTextIfNecessary();
 	scrollTo(mCurrentSection, mCurrentParagraph);
 }
 

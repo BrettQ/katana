@@ -93,6 +93,7 @@ private:
 	bool mNewLineForParagraphs;
 	bool mShowShortTitle;
 
+	bool mHasDoneInitialFill;
 	int mFirstSection;
 	int mFirstParagraph;
 	int mLastSection;
