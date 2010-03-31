@@ -1,6 +1,6 @@
 
 #include "bible_text_source.h"
-#include "infinite_scroll.h" // TODO: this should be broken out into text_source.h
+#include "text_source.h"
 
 #include <iostream>
 
