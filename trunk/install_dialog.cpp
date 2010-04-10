@@ -106,9 +106,8 @@ InstallTranslationsDialog::InstallTranslationsDialog(QWidget* pParent) :
 	mStatusReporter = new DlgStatusReporter(this);
 	mInstallMgr = new InstallMgr(installPath_c.toAscii().data(),
 								mStatusReporter);
-	mInstallMgr->setUserDisclaimerConfirmed(true);
 	mInstallSource = mInstallMgr->sources.find(
-						sourceName.toAscii().data())->second;
+						sourceName_c.toAscii().data())->second;
 
 	mMainMgr = new SWMgr;
 
@@ -169,13 +168,27 @@ QString InstallTranslationsDialog::getNewTranslation()
 
 void InstallTranslationsDialog::postShow()
 {
+	QString warning = "Katana is about to connect over the internet to "
+					"download translations.\n"
+					"If you live in a persecuted country and do not wish to"
+					" risk detection, you should *not* use this feature!\n\n"
+					"Do you want to continue?";
+	if (QMessageBox::warning(this, "Warning!", warning,
+			QMessageBox::Yes|QMessageBox::No) != QMessageBox::Yes)
+	{
+		reject();
+		return;
+	}
+	mInstallMgr->setUserDisclaimerConfirmed(true);
 	mStatusReporter->startProcess("Refreshing remote source");
 	if (mInstallMgr->refreshRemoteSource(mInstallSource))
 	{
 		QMessageBox::critical(this, "Unable to refresh",
 							"Unable to refresh remote "
 							"source. Please check your internet connection.");
+		mStatusReporter->endProcess();
 		reject();
+		return;
 	}
 	mStatusReporter->endProcess();
 
@@ -220,7 +233,7 @@ DeleteTranslationsDialog::DeleteTranslationsDialog(QWidget* parent) :
 
 	mInstallMgr = new InstallMgr(installPath_c.toAscii().data());
 	mInstallSource = mInstallMgr->sources.find(
-						sourceName.toAscii().data())->second;
+						sourceName_c.toAscii().data())->second;
 
 	mMainMgr = new SWMgr;
 	for (ModMap::iterator it = mMainMgr->Modules.begin();
