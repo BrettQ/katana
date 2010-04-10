@@ -12,16 +12,17 @@
 #include <sword/swmodule.h>
 #include <sword/versekey.h>
 
-sword::SWMgr library;
+using namespace sword;
 
-BibleInfo::BibleInfo(sword::SWModule* module)
+BibleInfo::BibleInfo(SWMgr* mgr, SWModule* module)
 {
 	mModule = module;
+	mMgr = mgr;
 }
 
 BibleInfo::~BibleInfo()
 {
-	delete mModule;
+	delete mMgr;
 }
 
 QString BibleInfo::getBibleName()
@@ -33,8 +34,8 @@ QStringList BibleInfo::getOTBookNames()
 {
 	QStringList bookNames;
 
-	sword::VerseKey* key = (sword::VerseKey*)mModule->CreateKey();
-	for ((*key) = sword::TOP; !key->Error(); key->Book(key->Book() + 1))
+	VerseKey* key = (VerseKey*)mModule->CreateKey();
+	for ((*key) = TOP; !key->Error(); key->Book(key->Book() + 1))
 	{
 		if (key->Testament() == 1)
 			bookNames.push_back(QString::fromUtf8(key->getBookName()));
@@ -48,8 +49,8 @@ QStringList BibleInfo::getNTBookNames()
 {
 	QStringList bookNames;
 
-	sword::VerseKey* key = (sword::VerseKey*)mModule->CreateKey();
-	for ((*key) = sword::TOP; !key->Error(); key->Book(key->Book() + 1))
+	VerseKey* key = (VerseKey*)mModule->CreateKey();
+	for ((*key) = TOP; !key->Error(); key->Book(key->Book() + 1))
 	{
 		if (key->Testament() == 2)
 			bookNames.push_back(QString::fromUtf8(key->getBookName()));
@@ -61,8 +62,8 @@ QStringList BibleInfo::getNTBookNames()
 
 int BibleInfo::getBookNum(QString bookName)
 {
-	sword::VerseKey* key = (sword::VerseKey*)mModule->CreateKey();
-	for ((*key) = sword::TOP; !key->Error(); key->Book(key->Book() + 1))
+	VerseKey* key = (VerseKey*)mModule->CreateKey();
+	for ((*key) = TOP; !key->Error(); key->Book(key->Book() + 1))
 	{
 		if (QString::fromUtf8(key->getBookName()) == bookName)
 		{
@@ -79,18 +80,18 @@ int BibleInfo::getBookNum(QString bookName)
 
 QString BibleInfo::getShortBookName(int bookNum)
 {
-	sword::VerseKey* key = (sword::VerseKey*)mModule->CreateKey();
-	(*key) = sword::TOP;
+	VerseKey* key = (VerseKey*)mModule->CreateKey();
+	(*key) = TOP;
 	key->Book(bookNum);
 	return key->getBookAbbrev();
 }
 
 int BibleInfo::getNumChapters(int book)
 {
-	sword::VerseKey* key = (sword::VerseKey*)mModule->CreateKey();
-	(*key) = sword::TOP;
+	VerseKey* key = (VerseKey*)mModule->CreateKey();
+	(*key) = TOP;
 	key->Book(book);
-	(*key) = sword::MAXCHAPTER;
+	(*key) = MAXCHAPTER;
 	int result = key->Chapter();
 	delete key;
 	return result;
@@ -98,11 +99,11 @@ int BibleInfo::getNumChapters(int book)
 
 int BibleInfo::getNumVerses(int book, int chapter)
 {
-	sword::VerseKey* key = (sword::VerseKey*)mModule->CreateKey();
-	(*key) = sword::TOP;
+	VerseKey* key = (VerseKey*)mModule->CreateKey();
+	(*key) = TOP;
 	key->Book(book);
 	key->Chapter(chapter + 1);
-	(*key) = sword::MAXVERSE;
+	(*key) = MAXVERSE;
 	int result = key->Verse();
 	delete key;
 	return result;
@@ -110,8 +111,8 @@ int BibleInfo::getNumVerses(int book, int chapter)
 
 QString BibleInfo::getVerseText(int book, int chapter, int verse)
 {
-	sword::VerseKey* key = (sword::VerseKey*)mModule->CreateKey();
-	(*key) = sword::TOP;
+	VerseKey* key = (VerseKey*)mModule->CreateKey();
+	(*key) = TOP;
 	key->Book(book);
 	key->Chapter(chapter + 1);
 	key->Verse(verse + 1);
@@ -128,17 +129,17 @@ void searchCallback(char percent, void* data)
 QList<Key> BibleInfo::search(QString text, QString scopeString,
 							QProgressDialog* progress)
 {
-	sword::ListKey scope;
-	sword::ListKey* scopePtr = NULL;
+	ListKey scope;
+	ListKey* scopePtr = NULL;
 
 	if (scopeString != "")
 	{
-		scope = sword::VerseKey().ParseVerseList(scopeString.toAscii().data(),
+		scope = VerseKey().ParseVerseList(scopeString.toAscii().data(),
 												"", true);
 		scopePtr = &scope;
 	}
 
-	sword::ListKey& results = mModule->search(text.toAscii().data(),
+	ListKey& results = mModule->search(text.toAscii().data(),
 											0, -2, scopePtr, 0,
 											searchCallback, progress);
 	results.Persist(true);
@@ -146,7 +147,7 @@ QList<Key> BibleInfo::search(QString text, QString scopeString,
 	QList<Key> verses;
 	for (int i = 0; i < results.Count(); i++)
 	{
-		sword::VerseKey* key = (sword::VerseKey*)results.getElement(i);
+		VerseKey* key = (VerseKey*)results.getElement(i);
 		verses.push_back(Key(key->getBookName(),
 							key->Chapter()-1,
 							key->Verse()-1));
@@ -157,7 +158,7 @@ QList<Key> BibleInfo::search(QString text, QString scopeString,
 
 Key BibleInfo::getKeyForString(QString verseDesc)
 {
-	sword::VerseKey* swordKey = (sword::VerseKey*)mModule->CreateKey();
+	VerseKey* swordKey = (VerseKey*)mModule->CreateKey();
 	(*swordKey) = verseDesc.toAscii().data();
 
 	return Key(swordKey->getBookName(),
@@ -216,12 +217,13 @@ private:
 
 QStringList getAvailableTranslations()
 {
+	SWMgr library;
 	QStringList translations;
-	for (sword::ModMap::iterator iter = library.Modules.begin();
+	for (ModMap::iterator iter = library.Modules.begin();
 		iter != library.Modules.end();
 		iter++)
 	{
-		sword::SWModule* module = (*iter).second;
+		SWModule* module = (*iter).second;
 		if (strcmp(module->Type(), "Biblical Texts") == 0)
 			translations.push_back(module->Name());
 	}
@@ -230,7 +232,11 @@ QStringList getAvailableTranslations()
 
 BibleInfo* getBibleInfo(QString translation)
 {
-	sword::SWModule* module = library.getModule(translation.toAscii().data());
+	// We allocate a new SWMgr for each translation because SWMgr
+	// can't handle available translations updating out from under it.
+	// This allows us to always use an up-to-date SWMgr.
+	SWMgr* mgr = new SWMgr;
+	SWModule* module = mgr->getModule(translation.toAscii().data());
 	if (!module)
 	{
 		QStringList translations = getAvailableTranslations();
@@ -239,9 +245,9 @@ BibleInfo* getBibleInfo(QString translation)
 			std::cout << "No texts available!\n";
 			return NULL;
 		}
-		module = library.getModule(translations[0].toAscii().data());
+		module = mgr->getModule(translations[0].toAscii().data());
 	}
-	return new BibleInfo(module);
+	return new BibleInfo(mgr, module);
 }
 
 TextSource* getBibleTextSource(BibleInfo* bible, QString book)

@@ -21,13 +21,14 @@ public:
 namespace sword
 {
 	struct SWModule;
+	class SWMgr;
 }
 class QProgressDialog;
 class BibleInfo
 {
 public:
-	// This class takes ownership of module.
-	BibleInfo(sword::SWModule* module);
+	// This class takes ownership of manager and module.
+	BibleInfo(sword::SWMgr* mgr, sword::SWModule* module);
 	~BibleInfo();
 
 	QString getBibleName();
@@ -48,6 +49,7 @@ public:
 
 protected:
 	sword::SWModule* mModule;
+	sword::SWMgr* mMgr;
 };
 
 QStringList getAvailableTranslations();
