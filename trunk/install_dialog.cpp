@@ -1,6 +1,7 @@
 #include "install_dialog.h"
 
 #include <QComboBox>
+#include <QDir>
 #include <QLabel>
 #include <QListWidget>
 #include <QLocale>
@@ -103,6 +104,8 @@ InstallTranslationsDialog::InstallTranslationsDialog(QWidget* pParent) :
 			config["Sources"]["FTPSource"] = installSource.getConfEnt();
 			config.Save();
 		}
+		QDir modsDir(swordPath_c);
+		modsDir.mkdir("mods.d");
 	}
 	mStatusReporter = new DlgStatusReporter(this);
 	mInstallMgr = new InstallMgr(installPath_c.toAscii().data(),
@@ -321,5 +324,20 @@ void DeleteTranslationsDialog::accept()
 									"Translations Deleted Successfully",
                                     QMaemo5InformationBox::DefaultTimeout);
 	QDialog::accept();
+}
+
+bool installTranslationIfNecessary()
+{
+	SWMgr library;
+	for (ModMap::iterator iter = library.Modules.begin();
+		iter != library.Modules.end();
+		iter++)
+	{
+		SWModule* module = (*iter).second;
+		if (strcmp(module->Type(), "Biblical Texts") == 0)
+			return true;
+	}
+	InstallTranslationsDialog dlg(NULL);
+	return dlg.exec() == QDialog::Accepted;
 }
 

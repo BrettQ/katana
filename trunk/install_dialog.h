@@ -61,3 +61,5 @@ protected:
 	// Widgets
 	QListWidget* mTransListWidget;
 };
+
+bool installTranslationIfNecessary();
