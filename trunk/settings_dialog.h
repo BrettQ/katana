@@ -10,16 +10,25 @@ class SettingsDialog : public QDialog
 public:
 	SettingsDialog(QWidget* parent);
 
+	// Returns true if a single new translation was installed.
+	bool getNewTranslation(QString& translationName);
+
 protected:
 	void selectItem(QComboBox* combo, QString text);
 
 public slots:
 	virtual void accept();
+	virtual void onInstallClicked();
+	virtual void onDeleteClicked();
 
 private:
 	QCheckBox* mNewLineCheck;
 	QComboBox* mFontSizeCombo;
+	QPushButton* mInstallButton;
+	QPushButton* mDeleteButton;
 	QPushButton* mSaveButton;
+
+	QString mNewTranslation;
 };
 
 bool shouldUseNewLineForVerses();

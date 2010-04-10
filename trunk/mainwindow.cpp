@@ -2,6 +2,7 @@
 
 #include "bible_text_source.h"
 #include "infinite_scroll.h"
+#include "install_dialog.h"
 #include "search_dialog.h"
 #include "search_results.h"
 #include "select_dialog.h"
@@ -217,6 +218,7 @@ void MainWindow::selectTranslation()
 		int chapter = mpViewer->getCurrentSection();
 		int verse = mpViewer->getCurrentParagraph();
 
+		delete mBible;
 		mBible = getBibleInfo(translation);
 		replaceViewer(createViewer(bookName, chapter, verse));
 		mSearchResults->hideResults();
@@ -235,14 +237,22 @@ void MainWindow::onSettings()
 	SettingsDialog dlg(this);
 	if (dlg.exec() == QDialog::Accepted)
 	{
+		QString newTranslation;
+		if (!dlg.getNewTranslation(newTranslation))
+			newTranslation = mBible->getBibleName();
+
 		QString bookName = mpViewer->getSourceName();
 		int chapter = mpViewer->getCurrentSection();
 		int verse = mpViewer->getCurrentParagraph();
 
+		// We deliberately reload the bible info here, because the translation
+		// might have been deleted out from under us, in which case
+		// getBibleInfo will simply return the last available Bible.
+		delete mBible;
+		mBible = getBibleInfo(newTranslation);
 		replaceViewer(createViewer(bookName, chapter, verse));
 		mSearchResults->hideResults();
 	}
-		
 }
 
 void MainWindow::goToVerse(QString verse)
