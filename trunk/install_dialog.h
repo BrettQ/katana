@@ -8,6 +8,7 @@ namespace sword
 	class SWMgr;
 	class SWModule;
 }
+class QComboBox;
 class QListWidget;
 class DlgStatusReporter;
 class InstallTranslationsDialog : public QDialog
@@ -21,7 +22,8 @@ public:
 public slots:
 	virtual void accept();
 	virtual void showEvent(QShowEvent* event);
-	virtual void postShow();
+	void postShow();
+	void onLanguageChange(const QString& text);
 
 protected:
 	bool installModule(sword::SWModule* module);
@@ -30,13 +32,14 @@ private:
 	sword::InstallMgr* mInstallMgr;
 	sword::InstallSource* mInstallSource;
 	sword::SWMgr* mMainMgr;
-	QList<sword::SWModule*> mTranslations;
+	QMap<QString, QList<sword::SWModule*> > mTranslations;
 
 	DlgStatusReporter* mStatusReporter;
 
 	QString mNewTranslation;
 
 	// Widgets
+	QComboBox* mLanguageCombo;
 	QListWidget* mTransListWidget;
 };
 

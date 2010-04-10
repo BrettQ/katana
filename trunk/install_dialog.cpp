@@ -1,5 +1,6 @@
 #include "install_dialog.h"
 
+#include <QComboBox>
 #include <QLabel>
 #include <QListWidget>
 #include <QLocale>
@@ -111,10 +112,22 @@ InstallTranslationsDialog::InstallTranslationsDialog(QWidget* pParent) :
 
 	mMainMgr = new SWMgr;
 
-	QHBoxLayout* mainLayout = new QHBoxLayout;
+	mLanguageCombo = new QComboBox;
+	mLanguageCombo->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding,
+											QSizePolicy::Minimum));
+	QHBoxLayout* languageLayout = new QHBoxLayout;
+	languageLayout->addWidget(new QLabel("Language: "));
+	languageLayout->addWidget(mLanguageCombo);
+
+	QVBoxLayout* selectionLayout = new QVBoxLayout;
+	selectionLayout->addLayout(languageLayout);
 	mTransListWidget = new QListWidget;
 	mTransListWidget->setSelectionMode(QAbstractItemView::MultiSelection);
-	mainLayout->addWidget(mTransListWidget);
+	selectionLayout->addWidget(mTransListWidget);
+
+	QHBoxLayout* mainLayout = new QHBoxLayout;
+	mainLayout->addLayout(selectionLayout);
+	
 	QPushButton* installButton = new QPushButton("Install");
 	QVBoxLayout* installLayout = new QVBoxLayout;
 	installLayout->insertStretch(1);
@@ -122,17 +135,20 @@ InstallTranslationsDialog::InstallTranslationsDialog(QWidget* pParent) :
 	mainLayout->addLayout(installLayout);
 	setLayout(mainLayout);
 
+	connect(mLanguageCombo, SIGNAL(currentIndexChanged(const QString&)),
+			this, SLOT(onLanguageChange(const QString&)));
 	connect(installButton, SIGNAL(clicked()), this, SLOT(accept()));
 }
 
 void InstallTranslationsDialog::accept()
 {
+	QString language = mTranslations.keys()[mLanguageCombo->currentIndex()];
 	QList<SWModule*> translationsToInstall;
 	for (int i = 0; i < mTransListWidget->selectedItems().count(); i++)
 	{
 		int index = mTransListWidget->row(
 						mTransListWidget->selectedItems()[i]);
-		translationsToInstall.append(mTranslations[index]);
+		translationsToInstall.append(mTranslations[language][index]);
 	}
 	if (!translationsToInstall.size())
 		return;
@@ -192,7 +208,6 @@ void InstallTranslationsDialog::postShow()
 	}
 	mStatusReporter->endProcess();
 
-	// TODO: eventually this should happen on language selection
 	SWMgr* mgr = mInstallSource->getMgr();
     std::map<SWModule*, int> mods =
 			InstallMgr::getModuleStatus(*mMainMgr, *mgr);
@@ -205,14 +220,33 @@ void InstallTranslationsDialog::postShow()
 		{
 			QLocale locale(it->first->Lang());
 			QString lang = QLocale::languageToString(locale.language());
-			if (locale.language() == QLocale::English)
-				mTranslations.append(it->first);
+			if (lang == "C")
+				lang = "Other";
+			if (!mTranslations.contains(lang))
+				mTranslations[lang] = QList<sword::SWModule*>();
+			mTranslations[lang].append(it->first);
 		}
 	}
-	qSort(mTranslations.begin(), mTranslations.end(), lessThan);
 
-	for (int i = 0; i < mTranslations.size(); i++)
-		mTransListWidget->addItem(mTranslations[i]->Description());
+	for (int i = 0; i < mTranslations.keys().size(); i++)
+	{
+		QString key = mTranslations.keys()[i];
+		qSort(mTranslations[key].begin(), mTranslations[key].end(), lessThan);
+		mLanguageCombo->addItem(mTranslations.keys()[i]);
+	}
+
+	int englishIndex = mLanguageCombo->findText("English");
+	if (englishIndex != -1)
+		mLanguageCombo->setCurrentIndex(englishIndex);
+}
+
+void InstallTranslationsDialog::onLanguageChange(const QString& text)
+{
+	mTransListWidget->clear();
+
+	QList<SWModule*> translations = mTranslations[text];
+	for (int i = 0; i < translations.size(); i++)
+		mTransListWidget->addItem(translations[i]->Description());
 }
 
 bool InstallTranslationsDialog::installModule(sword::SWModule* module)
