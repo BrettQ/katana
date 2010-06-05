@@ -2,14 +2,13 @@ Source: katana
 Section: user/utilities
 Priority: optional
 Maintainer: Josh Nisly <katana@joshnisly.com>
-Build-Depends: debhelper (>= 5), libqt4-maemo5-dev, sword16-dev, libx11-dev,
- mce-dev
+Build-Depends: debhelper (>= 5), libqt4-dev, sword16-dev, libx11-dev
 Standards-Version: 3.7.2
 
 Package: katana
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, libqt4-maemo5-core,
- libqt4-maemo5-gui, libqt4-maemo5-maemo5, sword16, mce
+Depends: ${shlibs:Depends}, ${misc:Depends}, libqt4-core,
+ libqt4-gui, libqt4-maemo5, sword16
 Description: A simple Bible reader
  Katana is a simple Bible reader based on sword.
 XSBC-Bugtracker: https://garage.maemo.org/tracker/?atid=4056&group_id=1084

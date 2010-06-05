@@ -24,7 +24,7 @@ builddir:
 	mkdir -p builddir
 
 builddir/Makefile: builddir
-	cd builddir && /opt/qt4-maemo5/bin/qmake-qt4 PREFIX=/usr BINPREFIX=/opt ../$(APPNAME).pro
+	cd builddir && qmake-qt4 PREFIX=/usr BINPREFIX=/opt ../$(APPNAME).pro
 
 build: build-stamp
 
@@ -55,7 +55,7 @@ install: build
 	dh_installdirs
 
 	# Add here commands to install the package into debian/katana.
-	cd builddir && $(MAKE) INSTALL_ROOT=$(CURDIR)/debian/katana install
+	cd builddir && LD_LIBRARY_PATH=/opt/maemo/usr/lib:$(LD_LIBRARY_PATH) $(MAKE) INSTALL_ROOT=$(CURDIR)/debian/katana install
 
 
 # Build architecture-independent files here.
@@ -88,7 +88,7 @@ binary-arch: build install
 #	dh_perl
 #	dh_makeshlibs
 	dh_installdeb
-	dh_shlibdeps
+#	dh_shlibdeps
 	dh_gencontrol
 	dh_md5sums
 	dh_builddeb

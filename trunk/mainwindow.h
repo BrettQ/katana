@@ -25,11 +25,6 @@ protected:
 
 	void replaceViewer(InfiniteScrollViewer* viewer);
 
-	void setLandscape();
-	void setPortrait();
-
-	bool event(QEvent* ev);
-
 	virtual void keyPressEvent(QKeyEvent* event);
 	void selectVerse(QString startingFilter);
 	void search(QString text, QString scope);
@@ -45,7 +40,6 @@ protected slots:
 	void onSearch();
 	void onSettings();
 	void goToVerse(QString verse);
-	void orientationChanged(const QString& newOrientation);
 
 private:
 	BibleInfo* mBible;
