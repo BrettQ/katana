@@ -1,3 +1,27 @@
+katana (0.3.3-2) unstable; urgency=low
+
+  * Stop depending on libqt4-maemo5
+
+ -- Josh Nisly <katana@joshnisly.com>  Sun, 13 Jun 2010 16:28:44 -0500
+
+katana (0.3.3-1) unstable; urgency=low
+
+  * Another build change
+
+ -- Josh Nisly <katana@joshnisly.com>  Wed,  9 Jun 2010 09:46:39 -0500
+
+katana (0.3.3-0) unstable; urgency=low
+
+  * Previous hack didn't work; reverting
+
+ -- Josh Nisly <katana@joshnisly.com>  Tue,  8 Jun 2010 10:30:28 -0500
+
+katana (0.3.2) unstable; urgency=low
+
+  * Change dependencies to keep the autobuilder happy
+
+ -- Josh Nisly <katana@joshnisly.com>  Tue,  8 Jun 2010 09:47:10 -0500
+
 katana (0.3.1-0) unstable; urgency=low
 
   * Misc changes for PR 1.2
