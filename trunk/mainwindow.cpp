@@ -9,6 +9,8 @@
 #include "settings_dialog.h"
 
 #include <iostream>
+#include <mce/mode-names.h>
+#include <mce/dbus-names.h>
 #include <QProgressDialog>
 #include <QScrollArea>
 #include <QtDBus/QDBusConnection>
@@ -24,7 +26,6 @@ MainWindow::MainWindow() : QMainWindow(NULL)
 	mShowShortTitle = false;
 
 	setAttribute(Qt::WA_Maemo5StackedWindow);
-	setAttribute(Qt::WA_Maemo5AutoOrientation);
 	createMenu();
 
 	QSettings settings;
@@ -48,6 +49,13 @@ MainWindow::MainWindow() : QMainWindow(NULL)
 
 	connect(mSearchResults, SIGNAL(resultSelected(const QString&)), this,
 			SLOT(goToVerse(const QString&)));
+
+	QDBusConnection::systemBus().connect(QString(),
+										MCE_SIGNAL_PATH,
+										MCE_SIGNAL_IF,
+										MCE_DEVICE_ORIENTATION_SIG,
+										this,
+										SLOT(orientationChanged(QString)));
 
 	// Tell maemo-status-volume to grab/ungrab increase/decrease keys
 	unsigned long val = 1;
@@ -96,6 +104,39 @@ void MainWindow::replaceViewer(InfiniteScrollViewer* viewer)
 	delete item->widget();
 	delete item;
 	viewer->setFocus(Qt::TabFocusReason);
+}
+
+void MainWindow::setLandscape()
+{
+	setAttribute(Qt::WA_Maemo5LandscapeOrientation, true);
+}
+
+void MainWindow::setPortrait()
+{
+	setAttribute(Qt::WA_Maemo5PortraitOrientation, true);
+}
+
+bool MainWindow::event(QEvent* ev)
+{
+	switch (ev->type())
+	{
+		case QEvent::WindowActivate:
+			QDBusConnection::systemBus().call(
+				QDBusMessage::createMethodCall(MCE_SERVICE, MCE_REQUEST_PATH,
+											   MCE_REQUEST_IF,
+											   MCE_ACCELEROMETER_ENABLE_REQ));
+		break;
+		case QEvent::WindowDeactivate:
+			QDBusConnection::systemBus().call(
+				QDBusMessage::createMethodCall(MCE_SERVICE, MCE_REQUEST_PATH,
+											   MCE_REQUEST_IF,
+											   MCE_ACCELEROMETER_DISABLE_REQ));
+			break;
+		default:
+			break;
+	}
+
+	return QWidget::event(ev);
 }
 
 void MainWindow::keyPressEvent(QKeyEvent* event)
@@ -220,3 +261,16 @@ void MainWindow::goToVerse(QString verse)
 
 	replaceViewer(createViewer(key.mBook, key.mChapter, key.mVerse));
 }
+void MainWindow::orientationChanged(const QString& newOrientation)
+{
+	if (newOrientation == QLatin1String(MCE_ORIENTATION_UNKNOWN))
+		return;
+	bool bPortrait = newOrientation == QLatin1String(MCE_ORIENTATION_PORTRAIT);
+	mShowShortTitle = bPortrait;
+	mpViewer->setShowShortTitle(mShowShortTitle);
+	if (bPortrait)
+		setPortrait();
+	else
+		setLandscape();
+}
+
