@@ -53,6 +53,7 @@ public:
 		mDialog->setAutoClose(false);
 		mDialog->setWindowTitle(title);
 		mDialog->show();
+		mDialog->setValue(1);
 	}
 	void endProcess()
 	{
