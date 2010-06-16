@@ -41,6 +41,7 @@ public:
 	int getNumChapters(int book);
 	int getNumVerses(int book, int chapter);
 	QString getVerseText(int book, int chapter, int verse);
+	bool isUnicode();
 
 	Key getKeyForString(QString verseDesc);
 

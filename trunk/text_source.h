@@ -9,6 +9,7 @@ public:
 	virtual int getNumSections()=0;
 	virtual int getNumParagraphs(int section)=0;
 	virtual QString getText(int section, int paragraph)=0;
+	virtual bool isUnicode()=0;
 };
 
 

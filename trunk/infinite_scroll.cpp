@@ -74,13 +74,17 @@ InfiniteScrollViewer::InfiniteScrollViewer(QWidget* mainWindow,
 
 	setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 	setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-	connect(verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(onScroll()));
+	connect(verticalScrollBar(), SIGNAL(valueChanged(int)),
+			this, SLOT(onScroll()));
 	setReadOnly(true);
 	setTextInteractionFlags(Qt::NoTextInteraction);
 	setDocument(mDocument);
 	setAttribute(Qt::WA_OpaquePaintEvent);
 
-	QTextCodec::setCodecForCStrings(QTextCodec::codecForName("utf8"));
+	if (mTextSource->isUnicode())
+		QTextCodec::setCodecForCStrings(QTextCodec::codecForName("utf8"));
+	else
+		QTextCodec::setCodecForCStrings(QTextCodec::codecForName("latin-1"));
 	grabGesture(Qt::SwipeGesture);
 
 	mShowShortTitle = shortTitle;

@@ -123,6 +123,11 @@ QString BibleInfo::getVerseText(int book, int chapter, int verse)
 	return text;
 }
 
+bool BibleInfo::isUnicode()
+{
+	return mModule->isUnicode();
+}
+
 void searchCallback(char percent, void* data)
 {
 	((QProgressDialog*)data)->setValue(percent);
@@ -207,6 +212,11 @@ public:
 	virtual QString getText(int section, int paragraph)
 	{
 		return mBible->getVerseText(mBookNum, section, paragraph);
+	}
+
+	virtual bool isUnicode()
+	{
+		return mBible->isUnicode();
 	}
 
 private:
