@@ -117,6 +117,8 @@ QString BibleInfo::getVerseText(int book, int chapter, int verse)
 	key->Chapter(chapter + 1);
 	key->Verse(verse + 1);
 	QString text = mModule->RenderText(key);
+	text = text.replace("<scripRef", "<span class=\"scripRef\"");
+	text = text.replace("</scripRef>", "</span>");
 	delete key;
 	return text;
 }

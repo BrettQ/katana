@@ -34,6 +34,12 @@ span\
 	font-size: %3pt;\
 	font-weight: bold;\
 }\
+span.scripRef\
+{\
+	visibility: hidden;\
+	color: #BBB;\
+	font-size: %4pt;\
+}\
 ";
 
 void SearchResultsHighlighter::highlightBlock(const QString& text)
@@ -86,7 +92,9 @@ InfiniteScrollViewer::InfiniteScrollViewer(QWidget* mainWindow,
 
 	int verseNumSize = (double)fontSize * 0.875;
 	int sectionSize = (double)fontSize * 1.75;
-	QString css = defaultCss.arg(fontSize).arg(verseNumSize).arg(sectionSize);
+	int scripRefSize = (double)fontSize * 0.7;
+	QString css = defaultCss.arg(fontSize).arg(verseNumSize)
+					.arg(sectionSize).arg(scripRefSize);
 	mDocument->setDefaultStyleSheet(css);
 
 	mCurrentSection = startingSection;
