@@ -4,6 +4,7 @@
 
 #include <iostream>
 
+#include <QApplication>
 #include <QMap>
 #include <QProgressDialog>
 
@@ -128,13 +129,34 @@ bool BibleInfo::isUnicode()
 	return mModule->isUnicode();
 }
 
+// Small helper class to pass data to/from search callback
+class Search
+{
+public:
+	Search()
+	{
+		mCancelled = false;
+	}
+
+	SWModule* mModule;
+	QProgressDialog* mDlg;
+	bool mCancelled;
+};
+
 void searchCallback(char percent, void* data)
 {
-	((QProgressDialog*)data)->setValue(percent);
+	Search* search = (Search*)data;
+	QApplication::processEvents();
+	search->mDlg->setValue(percent);
+	if (search->mDlg->wasCanceled())
+	{
+		search->mCancelled = true;
+		search->mModule->terminateSearch = true;
+	}
 }
 
-QList<Key> BibleInfo::search(QString text, QString scopeString,
-							QProgressDialog* progress)
+bool BibleInfo::search(QString text, QString scopeString,
+					QProgressDialog* progress, QList<Key>& results)
 {
 	ListKey scope;
 	ListKey* scopePtr = NULL;
@@ -142,25 +164,30 @@ QList<Key> BibleInfo::search(QString text, QString scopeString,
 	if (scopeString != "")
 	{
 		scope = VerseKey().ParseVerseList(scopeString.toAscii().data(),
-												"", true);
+										"", true);
 		scopePtr = &scope;
 	}
 
-	ListKey& results = mModule->search(text.toAscii().data(),
+	Search search;
+	search.mModule = mModule;
+	search.mDlg = progress;
+	ListKey& search_results = mModule->search(text.toAscii().data(),
 											0, -2, scopePtr, 0,
-											searchCallback, progress);
-	results.Persist(true);
+											searchCallback, &search);
+	if (search.mCancelled)
+		return false;
 
-	QList<Key> verses;
-	for (int i = 0; i < results.Count(); i++)
+	search_results.Persist(true);
+
+	for (int i = 0; i < search_results.Count(); i++)
 	{
-		VerseKey* key = (VerseKey*)results.getElement(i);
-		verses.push_back(Key(key->getBookName(),
+		VerseKey* key = (VerseKey*)search_results.getElement(i);
+		results.push_back(Key(key->getBookName(),
 							key->Chapter()-1,
 							key->Verse()-1));
 	}
 
-	return verses;
+	return true;
 }
 
 Key BibleInfo::getKeyForString(QString verseDesc)

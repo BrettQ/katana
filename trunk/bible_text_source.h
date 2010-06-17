@@ -46,7 +46,8 @@ public:
 	Key getKeyForString(QString verseDesc);
 
 	// Searching
-	QList<Key> search(QString text, QString scope, QProgressDialog* progress);
+	bool search(QString text, QString scope,
+				QProgressDialog* progress, QList<Key>& results);
 
 protected:
 	sword::SWModule* mModule;
