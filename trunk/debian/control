@@ -1,5 +1,5 @@
 Source: katana
-Section: user/utilities
+Section: user/education
 Priority: optional
 Maintainer: Josh Nisly <katana@joshnisly.com>
 Build-Depends: debhelper (>= 5), libqt4-dev, sword16-dev, libx11-dev, mce-dev
