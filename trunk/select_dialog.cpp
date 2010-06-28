@@ -1,5 +1,6 @@
 #include "select_dialog.h"
 
+#include "text_source.h"
 #include "bible_text_source.h"
 
 #include <QLayoutItem>
@@ -440,13 +441,14 @@ void SearchEdit::focusInEvent(QFocusEvent* event)
 		clearFocus();
 }
 
-void SearchEdit::mouseReleaseEvent(QMouseEvent* event)
+void SearchEdit::mouseReleaseEvent(QMouseEvent* /*event*/)
 {
 	if (mFocused)
 		QTimer::singleShot(10, this, SLOT(onClick()));
 }
 
-SelectFrame::SelectFrame(QWidget* parent, Selector* selector) : QScrollArea(parent)
+SelectFrame::SelectFrame(QWidget* parent, Selector* selector) :
+	QScrollArea(parent)
 {
 	mSelector = selector;
 }
@@ -494,13 +496,11 @@ int SelectResult::verse_GetChapter() const
 	return mChapter;
 }
 
-bool selectVerse(QWidget* parent, BibleInfo* bible,
+bool selectVerse(QWidget* parent, TextSource* bible,
 				QString startingFilter,
 				SelectResult& result)
 {
-	QList<QStringList> choices;
-	choices.push_back(bible->getOTBookNames());
-	choices.push_back(bible->getNTBookNames());
+	QList<QStringList> choices = bible->getSuperSections();
 
 	QString searchText;
 	bool searchImmediately = false;
@@ -518,11 +518,10 @@ bool selectVerse(QWidget* parent, BibleInfo* bible,
 	}
 
 	QString selectedBook = selectedChoice;
-	int selectedBookNum = bible->getBookNum(selectedBook);
 
 	choices.clear();
 	QStringList subChoices;
-	for (int i = 0; i < bible->getNumChapters(selectedBookNum); i++)
+	for (int i = 0; i < bible->getNumChapters(selectedBook); i++)
 		subChoices.push_back(QString("%1").arg(i + 1));
 	choices.push_back(subChoices);
 	if (!Selector::selectNoFilter(parent, choices,

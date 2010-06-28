@@ -113,8 +113,8 @@ protected:
 	QString mBookName;
 	int mChapter;
 };
-class BibleInfo;
-bool selectVerse(QWidget* parent, BibleInfo* bible,
+class TextSource;
+bool selectVerse(QWidget* parent, TextSource* bible,
 				QString startingFilter,
 				SelectResult& result);
 bool selectTranslation(QWidget* parent, QString& translation);

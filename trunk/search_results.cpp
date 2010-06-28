@@ -1,6 +1,6 @@
 #include "search_results.h"
 
-#include "bible_text_source.h"
+#include "text_source.h"
 
 #include <iostream>
 

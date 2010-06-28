@@ -34,11 +34,10 @@ MainWindow::MainWindow() : QMainWindow(NULL)
 	QString book = settings.value("initial/book", "Genesis").toString();
 	int chapter = settings.value("initial/chapter", 0).toInt();
 	int verse = settings.value("initial/verse", 0).toInt();
-	mBible = getBibleInfo(translation);
+    mpViewer = createViewer(translation, book, chapter, verse);
 
 	QFrame* frame = new QFrame;
 	mLayout = new QHBoxLayout;
-    mpViewer = createViewer(book, chapter, verse);
 	mLayout->addWidget(mpViewer);
 	mSearchResults = new SearchResultsFrame();
 	mLayout->addWidget(mSearchResults);
@@ -78,7 +77,7 @@ MainWindow::~MainWindow()
 void MainWindow::closeEvent(QCloseEvent* event)
 {
 	QSettings settings;
-	settings.setValue("initial/translation", mBible->getBibleName());
+	settings.setValue("initial/translation", mTextSource->getSourceName());
 	settings.setValue("initial/book", mpViewer->getSourceName());
 	settings.setValue("initial/chapter", mpViewer->getCurrentSection());
 	settings.setValue("initial/verse", mpViewer->getCurrentParagraph());
@@ -89,7 +88,8 @@ void MainWindow::closeEvent(QCloseEvent* event)
 void MainWindow::createMenu()
 {
 	menuBar()->addAction("Go to Chapter", this, SLOT(onSelectVerse()));
-	menuBar()->addAction("Select Translation", this, SLOT(selectTranslation()));
+	menuBar()->addAction("Select Translation", this,
+						SLOT(selectTranslation()));
 	menuBar()->addAction("Search", this, SLOT(onSearch()));
 	menuBar()->addAction("Settings", this, SLOT(onSettings()));
 }
@@ -160,7 +160,7 @@ void MainWindow::onSelectVerse()
 void MainWindow::selectVerse(QString startingFilter)
 {
 	SelectResult result;
-	if (::selectVerse(this, mBible, startingFilter, result))
+	if (::selectVerse(this, mTextSource, startingFilter, result))
 	{
 		switch (result.getType())
 		{
@@ -171,9 +171,12 @@ void MainWindow::selectVerse(QString startingFilter)
 			startSearch(result.search_GetText());
 			break;
 		case SelectResult::Type_SelectedVerse:
-			replaceViewer(createViewer(result.verse_GetBook(),
-									result.verse_GetChapter(), 0));
-			mSearchResults->hideResults();
+			{
+				QString translation = mTextSource->getSourceName();
+				replaceViewer(createViewer(translation, result.verse_GetBook(),
+										result.verse_GetChapter(), 0));
+				mSearchResults->hideResults();
+			}
 			break;
 		}
 	}
@@ -185,7 +188,7 @@ void MainWindow::search(QString text, QString scope)
 	progress.setWindowTitle("Searching...");
 	mCurrentSearchText = text;
 	QList<Key> results;
-	if (mBible->search(text, scope, &progress, results))
+	if (mTextSource->search(text, scope, &progress, results))
 		mSearchResults->handleResults(results);
 }
 
@@ -196,14 +199,15 @@ void MainWindow::startSearch(QString text)
 		search(dlg.getSearchText(), dlg.getSearchScope());
 }
 
-InfiniteScrollViewer* MainWindow::createViewer(QString book, int chapter,
+InfiniteScrollViewer* MainWindow::createViewer(QString translation,
+											QString book, int chapter,
 											int verse)
 {
-	TextSource* bibleSource = getBibleTextSource(mBible, book);
+	mTextSource = getBibleTextSource(translation, book);
 	QString highlight;
 	if (mSearchResults && mSearchResults->isShowingResults())
 		highlight = mCurrentSearchText;
-	return new InfiniteScrollViewer(this, bibleSource,
+	return new InfiniteScrollViewer(this, mTextSource,
 									shouldUseNewLineForVerses(),
 									getTextFontSize(),
 									chapter, verse,
@@ -219,9 +223,7 @@ void MainWindow::selectTranslation()
 		int chapter = mpViewer->getCurrentSection();
 		int verse = mpViewer->getCurrentParagraph();
 
-		delete mBible;
-		mBible = getBibleInfo(translation);
-		replaceViewer(createViewer(bookName, chapter, verse));
+		replaceViewer(createViewer(translation, bookName, chapter, verse));
 		mSearchResults->hideResults();
 	}
 }
@@ -240,7 +242,7 @@ void MainWindow::onSettings()
 	{
 		QString newTranslation;
 		if (!dlg.getNewTranslation(newTranslation))
-			newTranslation = mBible->getBibleName();
+			newTranslation = mTextSource->getSourceName();
 
 		QString bookName = mpViewer->getSourceName();
 		int chapter = mpViewer->getCurrentSection();
@@ -249,18 +251,18 @@ void MainWindow::onSettings()
 		// We deliberately reload the bible info here, because the translation
 		// might have been deleted out from under us, in which case
 		// getBibleInfo will simply return the last available Bible.
-		delete mBible;
-		mBible = getBibleInfo(newTranslation);
-		replaceViewer(createViewer(bookName, chapter, verse));
+		replaceViewer(createViewer(newTranslation, bookName, chapter, verse));
 		mSearchResults->hideResults();
 	}
 }
 
 void MainWindow::goToVerse(QString verse)
 {
-	Key key = mBible->getKeyForString(verse);
+	Key key = mTextSource->getKeyForString(verse);
 
-	replaceViewer(createViewer(key.mBook, key.mChapter, key.mVerse));
+	QString translation = mTextSource->getSourceName();
+	replaceViewer(createViewer(translation, key.mBook,
+							key.mChapter, key.mVerse));
 }
 void MainWindow::orientationChanged(const QString& newOrientation)
 {

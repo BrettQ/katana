@@ -35,9 +35,8 @@ protected:
 	void search(QString text, QString scope);
 	void startSearch(QString text);
 
-	InfiniteScrollViewer* createViewer(QString book, int chapter, int verse);
-	InfiniteScrollViewer* createViewerWithHighlight(QString book, int chapter,
-												int verse, QString highlight);
+	InfiniteScrollViewer* createViewer(QString translation, QString book,
+										int chapter, int verse);
 
 protected slots:
 	void onSelectVerse();
@@ -48,7 +47,7 @@ protected slots:
 	void orientationChanged(const QString& newOrientation);
 
 private:
-	BibleInfo* mBible;
+	TextSource* mTextSource;
 	InfiniteScrollViewer* mpViewer;
 
 	bool mShowShortTitle;
