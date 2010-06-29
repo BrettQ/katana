@@ -2,6 +2,7 @@
 
 #include "text_source.h"
 #include "bible_text_source.h"
+#include "pdb_text_source.h"
 
 #include <QLayoutItem>
 #include <QStringList>
@@ -539,6 +540,7 @@ bool selectTranslation(QWidget* parent, QString& translation)
 {
 	QList<QStringList> choices;
 	choices.push_back(getAvailableTranslations());
+	choices.push_back(getAllPDBNames());
 
 	QString selectedChoice;
 	if (!Selector::selectNoFilter(parent, choices, "Translation",

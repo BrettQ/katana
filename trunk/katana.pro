@@ -3,7 +3,8 @@ HEADERS = mainwindow.h infinite_scroll.h bible_text_source.h search_dialog.h \
 		search_results.h select_dialog.h settings_dialog.h install_dialog.h
 SOURCES = main.cpp mainwindow.cpp infinite_scroll.cpp bible_text_source.cpp \
 		search_dialog.cpp search_results.cpp select_dialog.cpp \
-		settings_dialog.cpp install_dialog.cpp text_source.cpp pdb.cpp
+		settings_dialog.cpp install_dialog.cpp text_source.cpp pdb.cpp \
+		pdb_text_source.cpp
 QT += maemo5
 LIBS += -lsword 
 INCLUDEPATH += /usr/include/sword

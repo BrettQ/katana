@@ -3,6 +3,7 @@
 #include "bible_text_source.h"
 #include "infinite_scroll.h"
 #include "install_dialog.h"
+#include "pdb_text_source.h"
 #include "search_dialog.h"
 #include "search_results.h"
 #include "select_dialog.h"
@@ -203,7 +204,10 @@ InfiniteScrollViewer* MainWindow::createViewer(QString translation,
 											QString book, int chapter,
 											int verse)
 {
-	mTextSource = getBibleTextSource(translation, book);
+	if (isPDBTranslation(translation))
+		mTextSource = getPDBTextSource(translation, book);
+	else
+		mTextSource = getBibleTextSource(translation, book);
 	QString highlight;
 	if (mSearchResults && mSearchResults->isShowingResults())
 		highlight = mCurrentSearchText;

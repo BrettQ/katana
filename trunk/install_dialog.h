@@ -19,6 +19,25 @@ public:
 
 	QString getNewTranslation();
 
+protected slots:
+	void swordClicked();
+	void pdbClicked();
+
+protected:
+	QString mNewTranslation;
+
+	QPushButton* mSwordButton;
+	QPushButton* mPDBButton;
+};
+
+class InstallSwordTranslationsDlg : public QDialog
+{
+	Q_OBJECT
+public:
+	InstallSwordTranslationsDlg(QWidget* parent);
+
+	QString getNewTranslation();
+
 public slots:
 	virtual void accept();
 	virtual void showEvent(QShowEvent* event);
