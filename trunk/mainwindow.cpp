@@ -88,7 +88,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
 
 void MainWindow::createMenu()
 {
-	menuBar()->addAction("Go to Chapter", this, SLOT(onSelectVerse()));
+	menuBar()->addAction("Go to Passage", this, SLOT(onSelectVerse()));
 	menuBar()->addAction("Select Translation", this,
 						SLOT(selectTranslation()));
 	menuBar()->addAction("Search", this, SLOT(onSearch()));
