@@ -1,6 +1,7 @@
 
 #include "infinite_scroll.h"
 
+#include <QAbstractKineticScroller>
 #include <QApplication>
 #include <QEvent>
 #include <QGestureEvent>
@@ -86,7 +87,8 @@ InfiniteScrollViewer::InfiniteScrollViewer(QWidget* mainWindow,
 	else
 		QTextCodec::setCodecForCStrings(QTextCodec::codecForName("latin-1"));
 	grabGesture(Qt::SwipeGesture);
-
+	property("kineticScroller").value<QAbstractKineticScroller*>()->
+		setOvershootPolicy(QAbstractKineticScroller::OvershootAlwaysOff);
 	mShowShortTitle = shortTitle;
 
 	mFirstSection = 0;
