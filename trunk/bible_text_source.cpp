@@ -150,16 +150,6 @@ protected:
 			return getSourceName() + " - " + \
 				derived_getBookName(mBook);
 	}
-	virtual Key derived_getKeyForString(QString verseDesc)
-	{
-		VerseKey* swordKey = (VerseKey*)mModule->CreateKey();
-		(*swordKey) = verseDesc.toAscii().data();
-
-		return Key(swordKey->getBookName(),
-				swordKey->Chapter()-1,
-				swordKey->Verse()-1);
-	}
-
 	virtual bool derived_search(QString text, QString scopeString,
 						QProgressDialog* progress, QList<Key>& results)
 	{

@@ -12,6 +12,9 @@ public:
 		mVerse = verse;
 	}
 
+	static Key fromString(QString string);
+	QString toString();
+
 	QString mBook;
 	int mChapter;
 	int mVerse;
@@ -34,7 +37,6 @@ public:
 	QString getSuperSectionName();
 
 	// Searching
-	Key getKeyForString(QString verseDesc);
 	bool search(QString text, QString scope,
 				QProgressDialog* progress, QList<Key>& results);
 
@@ -53,7 +55,6 @@ protected:
 	virtual QString derived_getSourceName()=0;
 	virtual QString derived_getSourceDescrip(bool useShort)=0;
 
-	virtual Key derived_getKeyForString(QString verseDesc)=0;
 	virtual bool derived_search(QString text, QString scope,
 						QProgressDialog* progress, QList<Key>& results)=0;
 

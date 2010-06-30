@@ -128,14 +128,41 @@ public:
 		return mFileName;
 	}
 
-	virtual Key derived_getKeyForString(QString /*verseDesc*/)
+	virtual bool derived_search(QString text, QString /*scope*/,
+						QProgressDialog* progress, QList<Key>& results)
 	{
-		return Key("", 0, 0);
-	}
-	virtual bool derived_search(QString /*text*/, QString /*scope*/,
-						QProgressDialog* /*progress*/, QList<Key>& /*results*/)
-	{
-		return false;
+		int totalSearchedVerses = 0;
+		int totalVerses = mPDB->getTotalVerses();
+		QRegExp search(text, Qt::CaseInsensitive, QRegExp::FixedString);
+		for (int bookNum = 0; bookNum < mPDB->getNumBooks(); bookNum++)
+		{
+			QString bookName = mPDB->getBookLongName(bookNum);
+			for (int chapter = 0;
+				chapter < mPDB->getNumChapters(bookNum);
+				chapter++)
+			{
+				for (int verse = 0;
+					verse < mPDB->getNumVerses(bookNum, chapter);
+					verse++)
+				{
+					QString text = mPDB->getVerse(bookNum, chapter, verse);
+					if (text.indexOf(search) != -1)
+						results.append(Key(bookName, chapter, verse));
+
+					totalSearchedVerses++;
+					if (totalSearchedVerses % 100 == 0)
+					{
+						int percent = totalSearchedVerses * 100 /
+									totalVerses;
+						QApplication::processEvents();
+						progress->setValue(percent);
+						if (progress->wasCanceled())
+							return false;
+					}
+				}
+			}
+		}
+		return true;
 	}
 private:
 	BibleFile* mPDB;

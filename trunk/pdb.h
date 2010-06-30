@@ -17,6 +17,7 @@ public:
 	int getNumBooks();
 	int getNumChapters(int bookNum);
 	int getNumVerses(int bookNum, int chapter);
+	int getTotalVerses();
 
 	QString getBookShortName(int bookNum);
 	QString getBookLongName(int bookNum);

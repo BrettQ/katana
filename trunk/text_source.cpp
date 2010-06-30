@@ -2,6 +2,29 @@
 
 #include <QStringList>
 
+QString Key::toString()
+{
+	return QString("%1 %2:%3").arg(mBook).arg(mChapter+1).arg(mVerse+1);
+}
+
+Key Key::fromString(QString string)
+{
+	Key key("", 0, 0);
+	QStringList parts = string.split(" ");
+	if (parts.size() < 2)
+		return key;
+	QString book = parts[0];
+	QStringList refParts = parts.last().split(":");
+	if (refParts.size() != 2)
+		return key;
+
+	parts.removeLast();
+	key.mBook = parts.join(" ");
+	key.mChapter = refParts[0].toInt() - 1;
+	key.mVerse = refParts[1].toInt() - 1;
+	return key;
+}
+
 QList<QStringList> TextSource::getSuperSections()
 {
 	return derived_getBooks();
@@ -50,11 +73,6 @@ QString TextSource::getSuperSectionName()
 int TextSource::getNumChapters(QString bookName)
 {
 	return derived_getNumChapters(derived_getBookNum(bookName));
-}
-
-Key TextSource::getKeyForString(QString verseDesc)
-{
-	return derived_getKeyForString(verseDesc);
 }
 
 bool TextSource::search(QString text, QString scope,

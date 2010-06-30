@@ -41,15 +41,12 @@ void SearchResultsFrame::handleResults(QList<Key> results)
 	buttonsLayout->setContentsMargins(0, 0, 0, 0);
 	for (int i = 0; i < results.count(); i++)
 	{
-		Key key = results[i];
-		QString result = QString("%1 %2:%3").arg(key.mBook)
-											.arg(key.mChapter+1)
-											.arg(key.mVerse+1);
-		QPushButton* button = new QPushButton(result);
+		QString text = results[i].toString();
+		QPushButton* button = new QPushButton(text);
 		QFont font = button->font();
 		font.setPointSize(12);
 		button->setFont(font);
-		mSearchResultsMapper->setMapping(button, result);
+		mSearchResultsMapper->setMapping(button, text);
 		connect(button, SIGNAL(clicked()), mSearchResultsMapper, SLOT(map()));
 		buttonsLayout->addWidget(button);
 	}

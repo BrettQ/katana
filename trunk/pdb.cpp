@@ -370,6 +370,11 @@ public:
 		return mChapterNumVerses[chapter] - prevStart;
 	}
 
+	int getTotalVerses()
+	{
+		return mVerseOffsetsWithinChapter.size();
+	}
+
 	int getDataStart()
 	{
 		return mHeader->mBookIndex+1;
@@ -491,6 +496,14 @@ int BibleFile::getNumChapters(int bookNum)
 int BibleFile::getNumVerses(int bookNum, int chapter)
 {
 	return mBooks[bookNum]->getNumVerses(chapter);
+}
+
+int BibleFile::getTotalVerses()
+{
+	int total = 0;
+	for (int i = 0; i < mBooks.size(); i++)
+		total += mBooks[i]->getTotalVerses();
+	return total;
 }
 
 QString BibleFile::getBookShortName(int bookNum)

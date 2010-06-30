@@ -266,7 +266,7 @@ void MainWindow::onSettings()
 
 void MainWindow::goToVerse(QString verse)
 {
-	Key key = mTextSource->getKeyForString(verse);
+	Key key = Key::fromString(verse);
 
 	QString translation = mTextSource->getSourceName();
 	replaceViewer(createViewer(translation, key.mBook,
