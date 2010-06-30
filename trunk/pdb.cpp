@@ -5,6 +5,7 @@
 #include <QFile>
 #include <QDataStream>
 #include <QRegExp>
+#include <QStringList>
 
 #include <assert.h>
 
@@ -246,8 +247,7 @@ public:
 		int wordStartOffset = pos.mIndexStart + \
 							pos.mRelPos * pos.mIndex->mWordLength + \
 							(offset * 2);
-		int result = (char)*(mWordData + wordStartOffset);
-		result *= 256;
+		int result = (char)*(mWordData + wordStartOffset) * 256;
 		result += (char)*(mWordData + wordStartOffset + 1);
 		return result;
 	}
@@ -559,6 +559,24 @@ protected:
 	int mCurRecordNum;
 };
 
+void processWord(int word, WordRetriever* wordRetriever,
+				bool& ignoreWords, QStringList& words)
+{
+	if (word > 0xFFF0)
+		ignoreWords = (word != 0xFFFC);
+	else if (!ignoreWords && word != 0)
+	{
+		QString wordResult = wordRetriever->getWord(word);
+		if (words.size() > 0 &&
+			(wordResult.length() == 1 && wordResult[0].isPunct()))
+		{
+			words.last() = words.last() + wordResult;
+		}
+		else
+			words.append(wordResult);
+	}
+}
+
 QString BibleFile::getVerse(int bookNum, int chapter, int verse)
 {
 	BookInfo* book = mBooks[bookNum];
@@ -567,12 +585,11 @@ QString BibleFile::getVerse(int bookNum, int chapter, int verse)
 	WordIterator iter(mFile, book->getDataStart(), offset);
 
 	bool ignoreWords = false;
-	QList<QString> words;
+	QStringList words;
 	for (int i = 0; i < verseLength; i++)
 	{
 		unsigned long wordNum = iter.getNextWordNum();
 
-		QList<int> pendingWords;
 		int repeatLength = 0;
 		if (mWordRetriever->isCompressed(wordNum, repeatLength))
 		{
@@ -580,30 +597,14 @@ QString BibleFile::getVerse(int bookNum, int chapter, int verse)
 			{
 				int realWordNum = \
 					mWordRetriever->getCompressedWordNum(wordNum, repeatNum);
-				pendingWords.append(realWordNum);
+				processWord(realWordNum, mWordRetriever, ignoreWords, words);
 			}
 		}
 		else
-			pendingWords.append(wordNum);
+			processWord(wordNum, mWordRetriever, ignoreWords, words);
 
-		while (pendingWords.size() > 0)
-		{
-			int word = pendingWords.takeFirst();
-			if (word > 0xFFF0)
-				ignoreWords = (word != 0xFFFC);
-			else if (!ignoreWords && word != 0)
-				words.append(mWordRetriever->getWord(word));
-		}
 	}
-	QString result;
-	for (int i = 0; i < words.size(); i++)
-	{
-		QString word = words[i];
-		if (result != "" && (word.length() != 1 || !word[0].isPunct()))
-			result += " ";
-
-		result += word;
-	}
+	QString result = words.join(" ");
 	QRegExp braceRegExp("\\{.*\\}");
 	result = result.replace(braceRegExp, "");
 	return result;
