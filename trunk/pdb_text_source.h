@@ -1,6 +1,4 @@
 
-QString browseForPDB(QWidget* parent);
-bool registerPDB(QString path, QString& error);
 QString pdbPathToName(QString path);
 
 QStringList getAllPDBNames();

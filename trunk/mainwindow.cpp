@@ -204,10 +204,14 @@ InfiniteScrollViewer* MainWindow::createViewer(QString translation,
 											QString book, int chapter,
 											int verse)
 {
+	TextSource* newSource = NULL;
 	if (isPDBTranslation(translation))
-		mTextSource = getPDBTextSource(translation, book);
+		newSource = getPDBTextSource(translation, book);
 	else
-		mTextSource = getBibleTextSource(translation, book);
+		newSource = getBibleTextSource(translation, book);
+	if (newSource)
+		mTextSource = newSource;
+
 	QString highlight;
 	if (mSearchResults && mSearchResults->isShowingResults())
 		highlight = mCurrentSearchText;

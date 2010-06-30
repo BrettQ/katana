@@ -19,8 +19,6 @@
 #include <sword/swmgr.h>
 #include <sword/swmodule.h>
 
-#include "pdb_text_source.h"
-
 using namespace sword;
 
 const QString sourceName_c = "CrossWire Bible Society";
@@ -85,7 +83,7 @@ protected:
 	QWidget* mParent;
 };
 
-InstallSwordTranslationsDlg::InstallSwordTranslationsDlg(QWidget* pParent) :
+InstallTranslationsDialog::InstallTranslationsDialog(QWidget* pParent) :
 	QDialog(pParent)
 {
 	setWindowTitle("Select one or more translations to install");
@@ -139,14 +137,19 @@ InstallSwordTranslationsDlg::InstallSwordTranslationsDlg(QWidget* pParent) :
 	installLayout->insertStretch(1);
 	installLayout->addWidget(installButton);
 	mainLayout->addLayout(installLayout);
-	setLayout(mainLayout);
+	QVBoxLayout* pdbLayout = new QVBoxLayout;
+	pdbLayout->addLayout(mainLayout);
+	QString pdbLabelText = "(PalmBible+ files can be used by "
+							"copying them to the MyDocs folder.)";
+	pdbLayout->addWidget(new QLabel(pdbLabelText));
+	setLayout(pdbLayout);
 
 	connect(mLanguageCombo, SIGNAL(currentIndexChanged(const QString&)),
 			this, SLOT(onLanguageChange(const QString&)));
 	connect(installButton, SIGNAL(clicked()), this, SLOT(accept()));
 }
 
-void InstallSwordTranslationsDlg::accept()
+void InstallTranslationsDialog::accept()
 {
 	QString language = mTranslations.keys()[mLanguageCombo->currentIndex()];
 	QList<SWModule*> translationsToInstall;
@@ -178,17 +181,17 @@ void InstallSwordTranslationsDlg::accept()
 	QDialog::accept();
 }
 
-void InstallSwordTranslationsDlg::showEvent(QShowEvent*)
+void InstallTranslationsDialog::showEvent(QShowEvent*)
 {
 	QTimer::singleShot(100, this, SLOT(postShow()));
 }
 
-QString InstallSwordTranslationsDlg::getNewTranslation()
+QString InstallTranslationsDialog::getNewTranslation()
 {
 	return mNewTranslation;
 }
 
-void InstallSwordTranslationsDlg::postShow()
+void InstallTranslationsDialog::postShow()
 {
 	QString warning = "Katana is about to connect over the internet to "
 					"download translations.\n"
@@ -246,7 +249,7 @@ void InstallSwordTranslationsDlg::postShow()
 		mLanguageCombo->setCurrentIndex(englishIndex);
 }
 
-void InstallSwordTranslationsDlg::onLanguageChange(const QString& text)
+void InstallTranslationsDialog::onLanguageChange(const QString& text)
 {
 	mTransListWidget->clear();
 
@@ -255,7 +258,7 @@ void InstallSwordTranslationsDlg::onLanguageChange(const QString& text)
 		mTransListWidget->addItem(translations[i]->Description());
 }
 
-bool InstallSwordTranslationsDlg::installModule(sword::SWModule* module)
+bool InstallTranslationsDialog::installModule(sword::SWModule* module)
 {
 	mStatusReporter->startProcess(QString("Installing ") +
 								module->Description());
@@ -327,55 +330,6 @@ void DeleteTranslationsDialog::accept()
 									"Translations Deleted Successfully",
                                     QMaemo5InformationBox::DefaultTimeout);
 	QDialog::accept();
-}
-
-InstallTranslationsDialog::InstallTranslationsDialog(QWidget* parent) :
-	QDialog(parent)
-{
-	setWindowTitle("Select Source");
-
-	QVBoxLayout* layout = new QVBoxLayout;
-	layout->addWidget(new QLabel("There are two ways to install new translations:"));
-	mSwordButton = new QPushButton("Download free translation from the "
-									"CrossWire library");
-	layout->addWidget(mSwordButton);
-
-	mPDBButton = new QPushButton("Import existing PalmBible+ .PDB file");
-	layout->addWidget(mPDBButton);
-	setLayout(layout);
-	connect(mSwordButton, SIGNAL(clicked()), this, SLOT(swordClicked()));
-	connect(mPDBButton, SIGNAL(clicked()), this, SLOT(pdbClicked()));
-}
-
-void InstallTranslationsDialog::swordClicked()
-{
-	InstallSwordTranslationsDlg dlg(this);
-	if (dlg.exec() == QDialog::Accepted)
-	{
-		mNewTranslation = dlg.getNewTranslation();
-		accept();
-	}
-}
-
-void InstallTranslationsDialog::pdbClicked()
-{
-	QString path = browseForPDB(this);
-	if (path != "")
-	{
-		QString error;
-		if (!registerPDB(path, error))
-		{
-			QMessageBox::critical(this, "Error", error);
-			return;
-		}
-		mNewTranslation = pdbPathToName(path);
-		accept();
-	}
-}
-
-QString InstallTranslationsDialog::getNewTranslation()
-{
-	return mNewTranslation;
 }
 
 bool installTranslationIfNecessary()

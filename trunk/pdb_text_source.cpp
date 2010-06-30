@@ -3,20 +3,17 @@
 #include "pdb.h"
 #include "text_source.h"
 
-QString browseForPDB(QWidget* parent)
+QStringList loadAllPDBs()
 {
-	QFileDialog dialog;
-	dialog.setFileMode(QFileDialog::ExistingFiles);
-	if (dialog.exec())
-		return dialog.selectedFiles()[0];
-	return "";
-}
-
-QStringList loadRegisteredPDBs()
-{
-	QSettings settings;
-	QString allPaths = settings.value("pdb/paths", "").toString();
-	return allPaths.split('|', QString::SkipEmptyParts);
+	QDir dir("/home/user/MyDocs");
+	QStringList pdbs = dir.entryList(QDir::Files, QDir::Name);
+	QStringList paths;
+	for (int i = 0; i < pdbs.size(); i++)
+	{
+		if (pdbs[i].toLower().endsWith("pdb"))
+			paths.append("/home/user/MyDocs/" + pdbs[i]);
+	}
+	return paths;
 }
 
 QString pdbPathToName(QString path)
@@ -28,9 +25,13 @@ QString pdbPathToName(QString path)
 QStringList getAllPDBNames()
 {
 	QStringList names;
-	QStringList paths = loadRegisteredPDBs();
+	QStringList paths = loadAllPDBs();
 	for (int i = 0; i < paths.size(); i++)
-		names.append(pdbPathToName(paths[i]));
+	{
+		QFileInfo file(paths[i]);
+		if (file.exists() || true)
+			names.append(file.fileName());
+	}
 	return names;
 }
 
@@ -40,17 +41,9 @@ bool isPDBTranslation(QString translation)
 	return allPDBs.indexOf(translation) != -1;
 }
 
-void saveRegisteredPDBs(const QStringList& paths)
-{
-	QString allPaths = paths.join("|");
-	QSettings settings;
-	settings.setValue("pdb/paths", allPaths);
-	settings.sync();
-}
-
 bool registerPDB(QString path, QString& error)
 {
-	QStringList paths = loadRegisteredPDBs();
+	QStringList paths = loadAllPDBs();
 	for (int i = 0; i < paths.size(); i++)
 	{
 		if (pdbPathToName(paths[i]) == pdbPathToName(path))
@@ -61,7 +54,6 @@ bool registerPDB(QString path, QString& error)
 	}
 
 	paths.append(path);
-	saveRegisteredPDBs(paths);
 	return true;
 }
 
@@ -136,12 +128,12 @@ public:
 		return mFileName;
 	}
 
-	virtual Key derived_getKeyForString(QString verseDesc)
+	virtual Key derived_getKeyForString(QString /*verseDesc*/)
 	{
 		return Key("", 0, 0);
 	}
-	virtual bool derived_search(QString text, QString scope,
-						QProgressDialog* progress, QList<Key>& results)
+	virtual bool derived_search(QString /*text*/, QString /*scope*/,
+						QProgressDialog* /*progress*/, QList<Key>& /*results*/)
 	{
 		return false;
 	}
@@ -155,7 +147,7 @@ TextSource* getPDBTextSource(QString name, QString bookName)
 	PDBTextSource* source = new PDBTextSource;
 	QString error;
 
-	QStringList paths = loadRegisteredPDBs();
+	QStringList paths = loadAllPDBs();
 	QString path;
 	for (int i = 0; i < paths.size(); i++)
 	{
@@ -167,7 +159,8 @@ TextSource* getPDBTextSource(QString name, QString bookName)
 
 	if (!source->load(path, error))
 	{
-		printf("unable to load! %s\n", error.toAscii().data());
+		QMessageBox::critical(NULL, "Error",
+							"Unable to load PDB file: " + error);
 		return NULL;
 	}
 	source->setSuperSection(bookName);
