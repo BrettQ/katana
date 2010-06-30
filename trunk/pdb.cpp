@@ -440,6 +440,13 @@ bool BibleFile::open(QString path, QString& error)
 		error = "Invalid header record, book section.";
 		return false;
 	}
+	if (!(mHeader->mAttributes & 0x02))
+	{
+		error = "PDB file is byte-shifted. Katana does not "
+				"support this file. Please contact katana@joshnisly.com "
+				"with this file so that it can be supported.";
+		return false;
+	}
 	// Load book information
 	char* nextRecord = (char*)mHeader + sizeof(VersionHeader);
 	for (int i = 0; i < mHeader->mTotalBooks; i++)
