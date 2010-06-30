@@ -79,7 +79,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
 {
 	QSettings settings;
 	settings.setValue("initial/translation", mTextSource->getSourceName());
-	settings.setValue("initial/book", mpViewer->getSourceName());
+	settings.setValue("initial/book", mTextSource->getSuperSectionName());
 	settings.setValue("initial/chapter", mpViewer->getCurrentSection());
 	settings.setValue("initial/verse", mpViewer->getCurrentParagraph());
 	settings.sync();
@@ -227,7 +227,7 @@ void MainWindow::selectTranslation()
 	QString translation;
 	if (::selectTranslation(this, translation))
 	{
-		QString bookName = mpViewer->getSourceName();
+		QString bookName = mTextSource->getSuperSectionName();
 		int chapter = mpViewer->getCurrentSection();
 		int verse = mpViewer->getCurrentParagraph();
 

@@ -32,6 +32,26 @@ bool TextSource::isUnicode()
 	return derived_isUnicode();
 }
 
+QString TextSource::getSourceName()
+{
+	return derived_getSourceName();
+}
+
+QString TextSource::getSourceDescrip(bool useShort)
+{
+	return derived_getSourceDescrip(useShort);
+}
+
+QString TextSource::getSuperSectionName()
+{
+	return derived_getBookName(mBook);
+}
+
+int TextSource::getNumChapters(QString bookName)
+{
+	return derived_getNumChapters(derived_getBookNum(bookName));
+}
+
 Key TextSource::getKeyForString(QString verseDesc)
 {
 	return derived_getKeyForString(verseDesc);
@@ -43,17 +63,3 @@ bool TextSource::search(QString text, QString scope,
 	return derived_search(text, scope, progress, results);
 }
 
-QString TextSource::getSourceName()
-{
-	return derived_getSourceName();
-}
-
-QString TextSource::getSourceDescrip(bool useShort)
-{
-	return derived_getSourceDescrip(useShort);
-}
-
-int TextSource::getNumChapters(QString bookName)
-{
-	return derived_getNumChapters(derived_getBookNum(bookName));
-}
