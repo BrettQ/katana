@@ -42,10 +42,6 @@ SettingsDialog::SettingsDialog(QWidget* parent) : QDialog(parent)
 	QVBoxLayout* saveLayout = new QVBoxLayout;
 	saveLayout->insertStretch(1);
 
-	mInstallButton = new QPushButton("Install\nTranslations");
-	saveLayout->addWidget(mInstallButton);
-	mDeleteButton = new QPushButton("Remove\nTranslations");
-	saveLayout->addWidget(mDeleteButton);
 	mSaveButton = new QPushButton("Save");
 	saveLayout->addWidget(mSaveButton);
 	layout->addLayout(saveLayout);
@@ -53,8 +49,6 @@ SettingsDialog::SettingsDialog(QWidget* parent) : QDialog(parent)
 	setLayout(layout);
 
 	connect(mSaveButton, SIGNAL(clicked()), this, SLOT(accept()));
-	connect(mInstallButton, SIGNAL(clicked()), this, SLOT(onInstallClicked()));
-	connect(mDeleteButton, SIGNAL(clicked()), this, SLOT(onDeleteClicked()));
 }
 
 bool SettingsDialog::getNewTranslation(QString& translationName)
@@ -84,23 +78,6 @@ void SettingsDialog::accept()
 	settings.setValue("settings/textSize", fontSize.toLower());
 	settings.sync();
 	QDialog::accept();
-}
-
-void SettingsDialog::onInstallClicked()
-{
-	InstallTranslationsDialog dlg(this);
-	if (dlg.exec() == QDialog::Accepted)
-	{
-		mNewTranslation = dlg.getNewTranslation();
-		QDialog::accept();
-	}
-}
-
-void SettingsDialog::onDeleteClicked()
-{
-	DeleteTranslationsDialog dlg(this);
-	if (dlg.exec() == QDialog::Accepted)
-		QDialog::accept();
 }
 
 bool shouldUseNewLineForVerses()

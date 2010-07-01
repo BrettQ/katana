@@ -18,8 +18,6 @@ protected:
 
 public slots:
 	virtual void accept();
-	virtual void onInstallClicked();
-	virtual void onDeleteClicked();
 
 private:
 	QCheckBox* mNewLineCheck;
