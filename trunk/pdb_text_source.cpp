@@ -134,14 +134,23 @@ public:
 		return mFileName;
 	}
 
-	virtual bool derived_search(QString text, QString /*scope*/,
+	virtual bool derived_search(QString text, QList<Key> scope,
 						QProgressDialog* progress, QList<Key>& results)
 	{
+		int startBook = -1;
+		int endBook = -1;
+		if (scope.size() > 0)
+		{
+			startBook = derived_getBookNum(scope[0].mBook);
+			endBook = derived_getBookNum(scope[1].mBook);
+		}
 		int totalSearchedVerses = 0;
-		int totalVerses = mPDB->getTotalVerses();
+		int totalVerses = mPDB->getTotalVerses(startBook, endBook);
 		QRegExp search(text, Qt::CaseInsensitive, QRegExp::FixedString);
 		for (int bookNum = 0; bookNum < mPDB->getNumBooks(); bookNum++)
 		{
+			if (startBook != -1 && (bookNum < startBook || bookNum > endBook))
+				continue;
 			QString bookName = mPDB->getBookLongName(bookNum);
 			for (int chapter = 0;
 				chapter < mPDB->getNumChapters(bookNum);

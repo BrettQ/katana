@@ -150,14 +150,17 @@ protected:
 			return getSourceName() + " - " + \
 				derived_getBookName(mBook);
 	}
-	virtual bool derived_search(QString text, QString scopeString,
+	virtual bool derived_search(QString text, QList<Key> scopeKeys,
 						QProgressDialog* progress, QList<Key>& results)
 	{
 		ListKey scope;
 		ListKey* scopePtr = NULL;
 
-		if (scopeString != "")
+		if (scopeKeys.size() > 0)
 		{
+			QString scopeString = QString("%1 - %2;")
+									.arg(scopeKeys[0].toString())
+									.arg(scopeKeys[1].toString());
 			scope = VerseKey().ParseVerseList(scopeString.toAscii().data(),
 											"", true);
 			scopePtr = &scope;

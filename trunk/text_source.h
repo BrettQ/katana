@@ -55,7 +55,9 @@ protected:
 	virtual QString derived_getSourceName()=0;
 	virtual QString derived_getSourceDescrip(bool useShort)=0;
 
-	virtual bool derived_search(QString text, QString scope,
+	// Scope always has zero or two elements,
+	// a start and end verse (inclusive.)
+	virtual bool derived_search(QString text, QList<Key> scope,
 						QProgressDialog* progress, QList<Key>& results)=0;
 
 protected:

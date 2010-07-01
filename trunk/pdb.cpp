@@ -509,10 +509,14 @@ int BibleFile::getNumVerses(int bookNum, int chapter)
 	return mBooks[bookNum]->getNumVerses(chapter);
 }
 
-int BibleFile::getTotalVerses()
+int BibleFile::getTotalVerses(int startBook, int endBook)
 {
+	if (startBook == -1)
+		startBook = 0;
+	if (endBook == -1)
+		endBook = mBooks.size()-1;
 	int total = 0;
-	for (int i = 0; i < mBooks.size(); i++)
+	for (int i = startBook; i <= endBook; i++)
 		total += mBooks[i]->getTotalVerses();
 	return total;
 }
@@ -619,28 +623,5 @@ QString BibleFile::getVerse(int bookNum, int chapter, int verse)
 	QRegExp braceRegExp("\\{.*\\}");
 	result = result.replace(braceRegExp, "");
 	return result;
-}
-
-void test()
-{
-	BibleFile file;
-	QString error;
-	if (!file.open("/home/joshn/niv.PDB", error))
-	{
-		printf("failed: %s\n", error.toAscii().data());
-		return;
-	}
-	for (int bookNum = 0; bookNum < file.getNumBooks(); bookNum++)
-	{
-		QString bookName = file.getBookShortName(bookNum);
-		for (int chapter = 0; chapter < file.getNumChapters(bookNum); chapter++)
-		{
-			for (int verse = 0; verse < file.getNumVerses(bookNum, chapter); verse++)
-			{
-				printf("%s %i:%i: %s\n", bookName.toAscii().data(), chapter, verse,
-						file.getVerse(bookNum, chapter, verse).toAscii().data());
-			}
-		}
-	}
 }
 

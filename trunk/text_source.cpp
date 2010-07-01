@@ -75,9 +75,20 @@ int TextSource::getNumChapters(QString bookName)
 	return derived_getNumChapters(derived_getBookNum(bookName));
 }
 
-bool TextSource::search(QString text, QString scope,
+bool TextSource::search(QString text, QString scopeString,
 			QProgressDialog* progress, QList<Key>& results)
 {
+	QList<Key> scope;
+	if (scopeString != "")
+	{
+		// For now, don't handle multiple ranges.
+		scopeString = scopeString.remove(";");
+		QStringList keys = scopeString.split("-");
+		if (keys.size() != 2)
+			return false;
+		for (int i = 0; i < keys.size(); i++)
+			scope.append(Key::fromString(keys[i].trimmed()));
+	}
 	return derived_search(text, scope, progress, results);
 }
 

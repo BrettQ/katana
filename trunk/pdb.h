@@ -19,7 +19,7 @@ public:
 	int getNumBooks();
 	int getNumChapters(int bookNum);
 	int getNumVerses(int bookNum, int chapter);
-	int getTotalVerses();
+	int getTotalVerses(int startBook=-1, int endBook=-1);
 
 	QString getBookShortName(int bookNum);
 	QString getBookLongName(int bookNum);
@@ -33,6 +33,4 @@ protected:
 	WordRetriever* mWordRetriever;
 	QList<BookInfo*> mBooks;
 };
-
-void test();
 
