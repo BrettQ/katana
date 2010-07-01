@@ -22,23 +22,29 @@ QString pdbPathToName(QString path)
 	return info.fileName();
 }
 
-QStringList getAllPDBNames()
+void getAvailablePDBTranslations(QStringList& names, QStringList& descs)
 {
-	QStringList names;
 	QStringList paths = loadAllPDBs();
 	for (int i = 0; i < paths.size(); i++)
 	{
 		QFileInfo file(paths[i]);
-		if (file.exists() || true)
-			names.append(file.fileName());
+		names.append(file.fileName());
+		// Show files even if we can't load them, so that the user
+		// can try to load them and get an error explaining why.
+		BibleFile bibleFile;
+		QString ignored;
+		if (bibleFile.open(paths[i], ignored))
+			descs.append(bibleFile.getDescription());
+		else
+			descs.append(file.fileName());
 	}
-	return names;
 }
 
 bool isPDBTranslation(QString translation)
 {
-	QStringList allPDBs = getAllPDBNames();
-	return allPDBs.indexOf(translation) != -1;
+	QStringList names, ignored;
+	getAvailablePDBTranslations(names, ignored);
+	return names.indexOf(translation) != -1;
 }
 
 bool registerPDB(QString path, QString& error)

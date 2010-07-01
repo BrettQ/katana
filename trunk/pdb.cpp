@@ -484,6 +484,17 @@ bool BibleFile::open(QString path, QString& error)
 	return true;
 }
 
+QString BibleFile::getDescription()
+{
+	QString desc = QString::fromAscii(mHeader->mDesc,
+									strlen(mHeader->mDesc));
+	// Limit length to ~40 chars
+	int pos = desc.indexOf(' ', 40);
+	if (pos != -1)
+		desc = desc.left(pos);
+	return desc.trimmed();
+}
+
 int BibleFile::getNumBooks()
 {
 	return mHeader->mTotalBooks;

@@ -3,7 +3,7 @@
 #include <QList>
 #include <QString>
 
-QStringList getAvailableTranslations();
+void getAvailableTranslations(QStringList& names, QStringList& descs);
 
 class TextSource;
 TextSource* getBibleTextSource(QString translation, QString book);

@@ -197,19 +197,20 @@ private:
 	SWModule* mModule;
 };
 
-QStringList getAvailableTranslations()
+void getAvailableTranslations(QStringList& names, QStringList& descs)
 {
 	SWMgr library;
-	QStringList translations;
 	for (ModMap::iterator iter = library.Modules.begin();
 		iter != library.Modules.end();
 		iter++)
 	{
 		SWModule* module = (*iter).second;
 		if (strcmp(module->Type(), "Biblical Texts") == 0)
-			translations.push_back(module->Name());
+		{
+			names.push_back(module->Name());
+			descs.push_back(module->Description());
+		}
 	}
-	return translations;
 }
 
 TextSource* getBibleTextSource(QString translation, QString book)
@@ -221,7 +222,8 @@ TextSource* getBibleTextSource(QString translation, QString book)
 	SWModule* module = mgr->getModule(translation.toAscii().data());
 	if (!module)
 	{
-		QStringList translations = getAvailableTranslations();
+		QStringList translations, ignored;
+		getAvailableTranslations(translations, ignored);
 		if (!translations.count())
 		{
 			std::cout << "No texts available!\n";

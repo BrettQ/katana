@@ -536,23 +536,6 @@ bool selectVerse(QWidget* parent, TextSource* bible,
 	return true;
 };
 
-bool selectTranslation(QWidget* parent, QString& translation)
-{
-	QList<QStringList> choices;
-	choices.push_back(getAvailableTranslations());
-	choices.push_back(getAllPDBNames());
-
-	QString selectedChoice;
-	if (!Selector::selectNoFilter(parent, choices, "Translation",
-								selectedChoice))
-	{
-		return false;
-	}
-
-	translation = selectedChoice;
-	return true;
-}
-
 bool onDialogKey(int key, QString text)
 {
 	if (fgActiveDialog)

@@ -1,7 +1,7 @@
 
 QString pdbPathToName(QString path);
 
-QStringList getAllPDBNames();
+void getAvailablePDBTranslations(QStringList& names, QStringList& descs);
 bool isPDBTranslation(QString translation);
 
 class TextSource;

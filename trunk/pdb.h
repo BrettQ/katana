@@ -14,6 +14,8 @@ public:
 
 	bool open(QString path, QString& error);
 
+	QString getDescription();
+
 	int getNumBooks();
 	int getNumChapters(int bookNum);
 	int getNumVerses(int bookNum, int chapter);
