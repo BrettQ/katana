@@ -63,7 +63,7 @@ bool SelectTranslationWidget::display(QString& translation)
 
 void SelectTranslationWidget::onSelect(QListWidgetItem* item)
 {
-	mSelected = item->text();
+	mSelected = mTranslations[item->text()];
 	mEventLoop->exit();
 }
 
