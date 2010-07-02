@@ -4,6 +4,9 @@
 
 #include <iostream>
 
+#include <QFontMetrics>
+#include <QListWidget>
+#include <QListWidget>
 #include <QPushButton>
 #include <QScrollArea>
 #include <QScrollBar>
@@ -16,7 +19,7 @@ SearchResultsFrame::SearchResultsFrame()
 	mLayout->setSpacing(2);
 	mLayout->setContentsMargins(0, 0, 0, 0);
 	setLayout(mLayout);
-	mSearchResultsMapper = NULL;
+	mResultsList = NULL;
 }
 
 SearchResultsFrame::~SearchResultsFrame()
@@ -28,47 +31,44 @@ void SearchResultsFrame::handleResults(QList<Key> results)
 	hideResults();
 	mLayout->setContentsMargins(3, 3, 0, 3);
 
-	mSearchResultsMapper = new QSignalMapper();
-	connect(mSearchResultsMapper, SIGNAL(mapped(const QString&)), this,
-			SLOT(onSelect(const QString&)));
-
 	QPushButton* hideButton =
 		new QPushButton(QIcon::fromTheme("general_close"), "");
 	connect(hideButton, SIGNAL(clicked()), this, SLOT(onHideClicked()));
 	mLayout->addWidget(hideButton);
-	QVBoxLayout* buttonsLayout = new QVBoxLayout;
-	buttonsLayout->setSpacing(0);
-	buttonsLayout->setContentsMargins(0, 0, 0, 0);
+	mResultsList = new QListWidget;
+	QStringList items;
+	for (int i = 0; i < results.count(); i++)
+		items.append(results[i].toString());
+	mResultsList->addItems(items);
+	setStyleSheet("QListWidget{"
+				"font-size: 14pt;"
+				"}");
+	int widest = 0;
 	for (int i = 0; i < results.count(); i++)
 	{
-		QString text = results[i].toString();
-		QPushButton* button = new QPushButton(text);
-		QFont font = button->font();
-		font.setPointSize(12);
-		button->setFont(font);
-		mSearchResultsMapper->setMapping(button, text);
-		connect(button, SIGNAL(clicked()), mSearchResultsMapper, SLOT(map()));
-		buttonsLayout->addWidget(button);
-	}
-	mScroll = new QScrollArea;
-	mScroll->setFrameShape(QFrame::NoFrame);
-	mScroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-	mScroll->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-	mScroll->setSizePolicy(QSizePolicy(QSizePolicy::Maximum,
-									QSizePolicy::Preferred));
+		QListWidgetItem* item = mResultsList->item(i);
+		item->setSizeHint(QSize(40, 40));
 
-	QFrame* frame = new QFrame();
-	frame->setStyleSheet("QPushButton{"
-						"padding: 7px 10px 7px 10px;"
-						"}");
-	frame->setLayout(buttonsLayout);
-	mScroll->setWidget(frame);
-	mLayout->addWidget(mScroll);
+		// Calculate row width
+		QFont font = item->font();
+		font.setPointSize(14);
+		QFontMetrics metrics(font);
+		int width = metrics.width(item->text());
+		if (width > widest)
+			widest = width;
+	}
+	mLayout->addWidget(mResultsList);
+	// TODO: 20 is a hack for scrollbar
+	mResultsList->setMaximumWidth(widest + 20);
+	mResultsList->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Minimum);
+
+	connect(mResultsList, SIGNAL(itemActivated(QListWidgetItem*)),
+			this, SLOT(onSelect(QListWidgetItem*)));
 }
 
 bool SearchResultsFrame::isShowingResults()
 {
-	return mSearchResultsMapper != NULL;
+	return mResultsList != NULL;
 }
 
 void SearchResultsFrame::hideResults()
@@ -80,17 +80,23 @@ void SearchResultsFrame::hideResults()
 		mLayout->removeItem(item);
 		delete item;
 	}
-	delete mSearchResultsMapper;
-	mSearchResultsMapper = NULL;
-}
 
-void SearchResultsFrame::onSelect(const QString& result)
-{
-	emit resultSelected(result);
+	if (mResultsList != NULL)
+	{
+		while (mResultsList->count() > 0)
+			delete mResultsList->takeItem(0);
+		delete mResultsList;
+		mResultsList = NULL;
+	}
 }
 
 void SearchResultsFrame::onHideClicked()
 {
 	hideResults();
+}
+
+void SearchResultsFrame::onSelect(QListWidgetItem* item)
+{
+	emit resultSelected(item->text());
 }
 

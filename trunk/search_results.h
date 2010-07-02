@@ -3,7 +3,8 @@
 class Key;
 class QVBoxLayout;
 class QPushButton;
-class QScrollArea;
+class QListWidget;
+class QListWidgetItem;
 class QSignalMapper;
 class SearchResultsFrame : public QFrame
 {
@@ -21,11 +22,10 @@ signals:
 	void resultSelected(const QString& result);
 
 protected slots:
-	void onSelect(const QString& result);
 	void onHideClicked();
+	void onSelect(QListWidgetItem* item);
 
 protected:
 	QVBoxLayout* mLayout;
-	QSignalMapper* mSearchResultsMapper;
-	QScrollArea* mScroll;
+	QListWidget* mResultsList;
 };

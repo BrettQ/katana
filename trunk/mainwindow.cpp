@@ -174,9 +174,9 @@ void MainWindow::selectVerse(QString startingFilter)
 		case SelectResult::Type_SelectedVerse:
 			{
 				QString translation = mTextSource->getSourceName();
+				mSearchResults->hideResults();
 				replaceViewer(createViewer(translation, result.verse_GetBook(),
 										result.verse_GetChapter(), 0));
-				mSearchResults->hideResults();
 			}
 			break;
 		}
@@ -231,8 +231,8 @@ void MainWindow::selectTranslation()
 		int chapter = mpViewer->getCurrentSection();
 		int verse = mpViewer->getCurrentParagraph();
 
-		replaceViewer(createViewer(translation, bookName, chapter, verse));
 		mSearchResults->hideResults();
+		replaceViewer(createViewer(translation, bookName, chapter, verse));
 	}
 }
 
@@ -256,11 +256,11 @@ void MainWindow::onSettings()
 		int chapter = mpViewer->getCurrentSection();
 		int verse = mpViewer->getCurrentParagraph();
 
+		mSearchResults->hideResults();
 		// We deliberately reload the bible info here, because the translation
 		// might have been deleted out from under us, in which case
 		// getBibleInfo will simply return the last available Bible.
 		replaceViewer(createViewer(newTranslation, bookName, chapter, verse));
-		mSearchResults->hideResults();
 	}
 }
 
