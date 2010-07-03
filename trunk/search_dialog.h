@@ -3,11 +3,13 @@
 
 class QLineEdit;
 class QComboBox;
+class TextSource;
 class SearchDialog : public QDialog
 {
 	Q_OBJECT
 public:
-	SearchDialog(QWidget* pParent, QString startingText);
+	SearchDialog(QWidget* parent, QString startingText,
+				TextSource* currentSource);
 
 	QString getSearchText() const { return mSearchText; }
 	QString getSearchScope() const { return mSearchScope; }

@@ -195,7 +195,7 @@ void MainWindow::search(QString text, QString scope)
 
 void MainWindow::startSearch(QString text)
 {
-	SearchDialog dlg(this, text);
+	SearchDialog dlg(this, text, mTextSource);
 	if (dlg.exec() == QDialog::Accepted)
 		search(dlg.getSearchText(), dlg.getSearchScope());
 }
@@ -238,7 +238,7 @@ void MainWindow::selectTranslation()
 
 void MainWindow::onSearch()
 {
-	SearchDialog dlg(this, "");
+	SearchDialog dlg(this, "", mTextSource);
 	if (dlg.exec() == QDialog::Accepted)
 		search(dlg.getSearchText(), dlg.getSearchScope());
 }

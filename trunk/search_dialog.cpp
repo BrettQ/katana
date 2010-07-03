@@ -6,17 +6,27 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 
-SearchDialog::SearchDialog(QWidget* parent, QString startingText) : QDialog(parent)
+#include "text_source.h"
+
+SearchDialog::SearchDialog(QWidget* parent, QString startingText,
+						TextSource* currentSource) : QDialog(parent)
 {
 	setWindowTitle("Search");
 
-	// TODO: these should probably be loaded 
-	// from a configuration file at some point.
 	mScopeOptions.insert("Entire Bible", "");
 	mScopeOptions.insert("Old Testament", "Genesis 1:1 - Malachi 4:6;");
 	mScopeOptions.insert("New Testament", "Matthew 1:1 - Revelation 22:21;");
 	mScopeOptions.insert("Gospels", "Matthew 1:1 - John 21:25;");
 
+	// Add option for current book
+	QString book = currentSource->getSuperSectionName();
+	Key start(book, 0, 0);
+	int numChapters = currentSource->getNumSections();
+	Key end(book, numChapters, currentSource->getNumParagraphs(numChapters)-1);
+	mScopeOptions.insert("Book of " + book,
+						start.toString() + " - " + end.toString());
+
+	// Construct layout
 	QVBoxLayout* layout = new QVBoxLayout;
 
 	mSearchEdit = new QLineEdit();
@@ -28,6 +38,7 @@ SearchDialog::SearchDialog(QWidget* parent, QString startingText) : QDialog(pare
 	// Scope
 	mScopeCombo = new QComboBox();
 	mScopeCombo->addItems(mScopeOptions.keys());
+	mScopeCombo->setCurrentIndex(mScopeOptions.keys().indexOf("Entire Bible"));
 	buttonLayout->addWidget(mScopeCombo);
 
 	buttonLayout->insertStretch(100);
