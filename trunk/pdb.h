@@ -2,7 +2,7 @@
 #include <QList>
 
 class PDBFile;
-class VersionHeader;
+class TranslationHeader;
 class WordRetriever;
 class BookInfo;
 
@@ -28,7 +28,7 @@ public:
 
 protected:
 	PDBFile* mFile;
-	VersionHeader* mHeader;
+	TranslationHeader* mHeader;
 	void* mWordIndexInfo;
 	WordRetriever* mWordRetriever;
 	QList<BookInfo*> mBooks;

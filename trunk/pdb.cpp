@@ -9,6 +9,37 @@
 
 #include <assert.h>
 
+/* The PalmBible+ format:
+This format uses the standard PDB file and records:
+http://en.wikipedia.org/wiki/PDB_%28Palm_OS%29
+
+The first record in the database is the TranslationHeader.
+It defines basic attributes of the file including the location of 
+the word index. After the header, the record contains BookHeader
+records for each book.
+
+The BookHeader points to a book index record. This index consists of
+different chapter/verse indices for efficient seeking. (See BookInfo::load()
+for more details.)
+
+The word index is a list of all words, grouped by length, that appear
+in the translation. Actual verse content consists of contiguous numbers
+(unsigned shorts) that point to words in the index. Some "words" in the
+word index are really two words joined together; index of text, the word
+in the word index consists of four bytes, a pair of (unsigned short)
+word indices.
+
+Besides actual verse text, the verse content contains book and chapter titles.
+To delineate these sections, each section is preceded by a control word
+(control words are greater than 0xFFFB.) We ignore the chapter and book
+titles, and only look at verse text (whose control word is 0xFFFC.)
+
+The verse text contains non-Biblical content, surrounded by braces. We ignore
+this content by regex'ing it out.
+
+T
+
+*/
 #pragma pack(push, 1)
 
 struct PDBHeader
@@ -36,7 +67,7 @@ struct RecHeader
 	unsigned char mUniqueID[3];
 };
 
-struct VersionHeader
+struct TranslationHeader
 {
 	char mName[16];
 	char mDesc[128];
@@ -429,8 +460,8 @@ bool BibleFile::open(QString path, QString& error)
 		return false;
 
 	int recSize = -1;
-	mHeader = (VersionHeader*)mFile->getRecord(0, recSize);
-	if ((unsigned)recSize < sizeof(VersionHeader))
+	mHeader = (TranslationHeader*)mFile->getRecord(0, recSize);
+	if ((unsigned)recSize < sizeof(TranslationHeader))
 	{
 		error = "Invalid header record.";
 		return false;
@@ -439,7 +470,7 @@ bool BibleFile::open(QString path, QString& error)
 	fixEndian(mHeader->mTotalWordRecords);
 	fixEndian(mHeader->mTotalBooks);
 
-	if ((unsigned)recSize < sizeof(VersionHeader) + 
+	if ((unsigned)recSize < sizeof(TranslationHeader) + 
 		sizeof(BookInfo) * mHeader->mTotalBooks)
 	{
 		error = "Invalid header record, book section.";
@@ -453,7 +484,7 @@ bool BibleFile::open(QString path, QString& error)
 		return false;
 	}
 	// Load book information
-	char* nextRecord = (char*)mHeader + sizeof(VersionHeader);
+	char* nextRecord = (char*)mHeader + sizeof(TranslationHeader);
 	for (int i = 0; i < mHeader->mTotalBooks; i++)
 	{
 		BookHeader* bookHeader = (BookHeader*)nextRecord;
