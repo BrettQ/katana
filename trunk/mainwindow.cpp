@@ -252,7 +252,7 @@ void MainWindow::onSettings()
 		if (!dlg.getNewTranslation(newTranslation))
 			newTranslation = mTextSource->getSourceName();
 
-		QString bookName = mpViewer->getSourceName();
+		QString bookName = mpViewer->getSuperSectionName();
 		int chapter = mpViewer->getCurrentSection();
 		int verse = mpViewer->getCurrentParagraph();
 
