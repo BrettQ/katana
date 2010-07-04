@@ -520,17 +520,23 @@ bool selectVerse(QWidget* parent, TextSource* bible,
 
 	QString selectedBook = selectedChoice;
 
-	choices.clear();
-	QStringList subChoices;
-	for (int i = 0; i < bible->getNumChapters(selectedBook); i++)
-		subChoices.push_back(QString("%1").arg(i + 1));
-	choices.push_back(subChoices);
-	if (!Selector::selectNoFilter(parent, choices,
-								"Chapter", selectedChoice))
+	int selectedChapter = - 1;
+	if (bible->getNumChapters(selectedBook) == 1)
+		selectedChapter = 0;
+	else
 	{
-		return false;
+		choices.clear();
+		QStringList subChoices;
+		for (int i = 0; i < bible->getNumChapters(selectedBook); i++)
+			subChoices.push_back(QString("%1").arg(i + 1));
+		choices.push_back(subChoices);
+		if (!Selector::selectNoFilter(parent, choices,
+									"Chapter", selectedChoice))
+		{
+			return false;
+		}
+		selectedChapter = selectedChoice.toInt() - 1;
 	}
-	int selectedChapter = selectedChoice.toInt() - 1;
 
 	result = SelectResult::verse(selectedBook, selectedChapter);
 	return true;
