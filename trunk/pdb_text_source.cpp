@@ -22,28 +22,31 @@ QString pdbPathToName(QString path)
 	return info.fileName();
 }
 
-void getAvailablePDBTranslations(QStringList& names, QStringList& descs)
+void getAvailablePDBTranslations(QStringList& names, QStringList* descs)
 {
 	QStringList paths = loadAllPDBs();
 	for (int i = 0; i < paths.size(); i++)
 	{
 		QFileInfo file(paths[i]);
 		names.append(file.fileName());
-		// Show files even if we can't load them, so that the user
-		// can try to load them and get an error explaining why.
-		BibleFile bibleFile;
-		QString ignored;
-		if (bibleFile.open(paths[i], ignored))
-			descs.append(bibleFile.getDescription());
-		else
-			descs.append(file.fileName());
+		if (descs)
+		{
+			// Show files even if we can't load them, so that the user
+			// can try to load them and get an error explaining why.
+			BibleFile bibleFile;
+			QString ignored;
+			if (bibleFile.open(paths[i], ignored))
+				descs->append(bibleFile.getDescription());
+			else
+				descs->append(file.fileName());
+		}
 	}
 }
 
 bool isPDBTranslation(QString translation)
 {
-	QStringList names, ignored;
-	getAvailablePDBTranslations(names, ignored);
+	QStringList names;
+	getAvailablePDBTranslations(names, NULL);
 	return names.indexOf(translation) != -1;
 }
 

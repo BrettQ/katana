@@ -33,16 +33,19 @@ QList<QStringList> TextSource::getSuperSections()
 void TextSource::setSuperSection(QString superSection)
 {
 	mBook = derived_getBookNum(superSection);
+	mNumChapters = derived_getNumChapters(mBook);
 }
 
 int TextSource::getNumSections()
 {
-	return derived_getNumChapters(mBook);
+	return mNumChapters;
 }
 
 int TextSource::getNumParagraphs(int section)
 {
-	return derived_getNumVerses(mBook, section);
+	if (!mChapterVerses.contains(section))
+		mChapterVerses[section] = derived_getNumVerses(mBook, section);
+	return mChapterVerses[section];
 }
 
 QString TextSource::getText(int section, int paragraph)

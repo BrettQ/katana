@@ -1,4 +1,5 @@
 #include <QString>
+#include <QMap>
 
 class QProgressDialog;
 
@@ -62,5 +63,7 @@ protected:
 
 protected:
 	int mBook;
+	int mNumChapters;
+	QMap<int, int> mChapterVerses;
 };
 

@@ -19,7 +19,7 @@ SelectTranslationWidget::SelectTranslationWidget(QWidget* parent) :
 
 	QStringList names, descs;
 	getAvailableTranslations(names, descs);
-	getAvailablePDBTranslations(names, descs);
+	getAvailablePDBTranslations(names, &descs);
 	for (int i = 0; i < names.size(); i++)
 		mTranslations.insert(descs[i], names[i]);
 

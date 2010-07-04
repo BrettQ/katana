@@ -11,6 +11,7 @@
 #include <QTextBlock>
 #include <QTextCodec>
 #include <QTimer>
+#include <QTime>
 
 #include <iostream>
 
@@ -85,7 +86,7 @@ InfiniteScrollViewer::InfiniteScrollViewer(QWidget* mainWindow,
 	if (mTextSource->isUnicode())
 		QTextCodec::setCodecForCStrings(QTextCodec::codecForName("utf8"));
 	else
-		QTextCodec::setCodecForCStrings(QTextCodec::codecForName("latin-1"));
+		QTextCodec::setCodecForCStrings(QTextCodec::codecForName("windows-1252"));
 	grabGesture(Qt::SwipeGesture);
 	property("kineticScroller").value<QAbstractKineticScroller*>()->
 		setOvershootPolicy(QAbstractKineticScroller::OvershootAlwaysOff);
@@ -147,12 +148,14 @@ void InfiniteScrollViewer::scrollPage(bool bUp)
 void InfiniteScrollViewer::fillInitial(int section, int startingParagraph)
 {
 	QTextCursor cursor(mDocument);
+	cursor.beginEditBlock();
 	insertSectionStart(cursor, section);
 	int lastParagraph = startingParagraph + 10;
 	if (lastParagraph >= mTextSource->getNumParagraphs(section))
 		lastParagraph = mTextSource->getNumParagraphs(section) - 1;
 	for (int i = 0; i <= lastParagraph; i++)
 		insertParagraph(cursor, section, i);
+	cursor.endEditBlock();
 
 	mFirstSection = section;
 	mFirstParagraph = 0;
