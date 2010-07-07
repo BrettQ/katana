@@ -24,6 +24,7 @@ SelectTranslationWidget::SelectTranslationWidget(QWidget* parent) :
 		mTranslations.insert(descs[i], names[i]);
 
 	mList = new QListWidget(this);
+	mList->setWordWrap(true);
 	mList->addItems(mTranslations.keys());
 	QVBoxLayout* layout = new QVBoxLayout;
 	layout->addWidget(mList);

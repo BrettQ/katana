@@ -126,6 +126,7 @@ InstallTranslationsDialog::InstallTranslationsDialog(QWidget* pParent) :
 	QVBoxLayout* selectionLayout = new QVBoxLayout;
 	selectionLayout->addLayout(languageLayout);
 	mTransListWidget = new QListWidget;
+	mTransListWidget->setWordWrap(true);
 	mTransListWidget->setSelectionMode(QAbstractItemView::MultiSelection);
 	selectionLayout->addWidget(mTransListWidget);
 
